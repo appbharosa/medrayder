@@ -1,6 +1,7 @@
 import 'package:executive/config/session_manager/session_manager.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../../bloc/update_bloc/update_bloc.dart';
 import '../../bloc/update_bloc/update_event.dart';
 import '../../bloc/update_bloc/update_state.dart';
@@ -50,21 +51,23 @@ class _SplashScreenState extends State<SplashScreen>
 
   /// ✅ LOGIN FLOW (same as your code)
   void _checkLogin() async {
-    await Future.delayed(const Duration(seconds: 2));
-
     final token = await SessionManager.getToken();
+
+    print("🔥 TOKEN IN SPLASH: $token"); // ADD THIS
 
     if (!mounted) return;
 
     if (token != null && token.isNotEmpty) {
-      Navigator.pushReplacementNamed(
+      Navigator.pushNamedAndRemoveUntil(
         context,
         RoutesName.homeScreen,
+            (route) => false,
       );
     } else {
-      Navigator.pushReplacementNamed(
+      Navigator.pushNamedAndRemoveUntil(
         context,
         RoutesName.loginScreen,
+            (route) => false,
       );
     }
   }
@@ -80,8 +83,21 @@ class _SplashScreenState extends State<SplashScreen>
           content: Text(result.message),
           actions: [
             TextButton(
-              onPressed: () {
-                // 👉 Add Play Store link here
+              onPressed: () async {
+                const packageName = "com.medrayder.executive"; // 🔥 CHANGE THIS
+
+                final Uri url = Uri.parse(
+                  "https://play.google.com/store/apps/details?id=$packageName",
+                );
+
+                if (await canLaunchUrl(url)) {
+                  await launchUrl(
+                    url,
+                    mode: LaunchMode.externalApplication,
+                  );
+                } else {
+                  print("❌ Could not launch Play Store");
+                }
               },
               child: const Text("Update"),
             ),
@@ -98,22 +114,23 @@ class _SplashScreenState extends State<SplashScreen>
   }
 
   @override
+  @override
   Widget build(BuildContext context) {
 
     return BlocListener<UpdateBloc, UpdateState>(
       listener: (context, state) {
 
-        /// 🔴 If update required → block app
+        /// 🔴 FORCE UPDATE
         if (state is UpdateRequired) {
           _showUpdateDialog(state.result);
         }
 
-        /// ✅ If no update → continue login
+        /// ✅ NO UPDATE → CHECK LOGIN
         else if (state is UpdateNotRequired) {
           _checkLogin();
         }
 
-        /// ⚠️ If error → allow login anyway
+        /// ⚠️ ERROR → STILL ALLOW LOGIN
         else if (state is UpdateError) {
           _checkLogin();
         }

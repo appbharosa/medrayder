@@ -1,4 +1,3 @@
-
 import 'package:executive/config/colors/app_colors.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -7,8 +6,7 @@ import '../../bloc/agent_bloc/agent_event.dart';
 import '../../bloc/agent_bloc/agent_state.dart';
 import 'dart:io';
 import 'package:image_picker/image_picker.dart';
-import '../../bloc/home_bloc/home_bloc.dart';
-import '../../bloc/home_bloc/home_event.dart';
+import '../../config/routes/routes_name.dart';
 import '../../config/session_manager/session_manager.dart';
 import '../../model/agent_model/agent_model.dart';
 
@@ -125,15 +123,23 @@ class _AgentScreenState extends State<AgentScreen> {
         actions: widget.showBackButton
             ? null
             : [
-          const Padding(
-            padding: EdgeInsets.only(right: 16),
-            child: CircleAvatar(
-              backgroundColor: Colors.white,
-              radius: 18,
-              child: Icon(
-                Icons.notifications,
-                color: AppColors.blue,
-                size: 20,
+          Padding(
+            padding: const EdgeInsets.only(right: 16),
+            child: GestureDetector(
+              onTap: () {
+                Navigator.pushNamed(
+                  context,
+                  RoutesName.notificationScreen,
+                );
+              },
+              child: const CircleAvatar(
+                backgroundColor: Colors.white,
+                radius: 18,
+                child: Icon(
+                  Icons.notifications,
+                  color: AppColors.blue,
+                  size: 20,
+                ),
               ),
             ),
           ),

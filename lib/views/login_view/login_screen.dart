@@ -43,8 +43,18 @@ class _LoginScreenState extends State<LoginScreen> {
         },
         builder: (context, state) {
           return Scaffold(
+            resizeToAvoidBottomInset: true,
+
+            /// ================= BUTTON =================
             bottomNavigationBar: Padding(
-              padding: const EdgeInsets.all(16),
+              padding: EdgeInsets.only(
+                left: 16,
+                right: 16,
+                bottom: MediaQuery.of(context).viewInsets.bottom > 0
+                    ? MediaQuery.of(context).viewInsets.bottom
+                    : 16,
+                top: 10,
+              ),
               child: SizedBox(
                 height: 50,
                 child: ElevatedButton(
@@ -57,6 +67,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   onPressed: state is LoginLoading
                       ? null
                       : () {
+                    FocusScope.of(context).unfocus(); // 🔥 dismiss keyboard
                     if (_formKey.currentState!.validate()) {
                       context.read<LoginBloc>().add(
                         LoginButtonPressed(
@@ -66,75 +77,76 @@ class _LoginScreenState extends State<LoginScreen> {
                     }
                   },
                   child: state is LoginLoading
-                      ? const CircularProgressIndicator(
-                    color: Colors.white,
-                  )
+                      ? const CircularProgressIndicator(color: Colors.white)
                       : const Text(
                     "Continue",
-                    style: TextStyle(
-                      fontSize: 16,
-                      color: Colors.white,
-                    ),
+                    style: TextStyle(fontSize: 16, color: Colors.white),
                   ),
                 ),
               ),
             ),
 
             /// ================= BODY =================
-            body: SingleChildScrollView(
-              child: Padding(
-                padding: const EdgeInsets.all(20),
-                child: Form(
-                  key: _formKey,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const SizedBox(height: 80),
+            body: GestureDetector(
+              onTap: () => FocusScope.of(context).unfocus(), // 🔥 dismiss on tap
+              child: SingleChildScrollView(
+                keyboardDismissBehavior:
+                ScrollViewKeyboardDismissBehavior.onDrag, // 🔥 iOS fix
+                child: Padding(
+                  padding: const EdgeInsets.all(20),
+                  child: Form(
+                    key: _formKey,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const SizedBox(height: 80),
 
-                      /// ================= SVG IMAGE =================
-                      Center(
-                        child: SvgPicture.asset(
-                          "assets/med.svg",
-                          height: 180,
-                          width: 150,
-                        ),
-                      ),
-
-                      const SizedBox(height: 30),
-
-                      /// ================= TITLE =================
-                      const Text(
-                        "Login",
-                        style: TextStyle(
-                          fontSize: 26,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-
-                      SizedBox(height: 20,),
-
-                      TextFormField(
-                        controller: phoneController,
-                        keyboardType: TextInputType.phone,
-                        maxLength: 10,
-                        decoration: InputDecoration(
-                          hintText: "Enter Phone Number",
-                          counterText: "",
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(10),
+                        /// IMAGE
+                        Center(
+                          child: SvgPicture.asset(
+                            "assets/med.svg",
+                            height: 180,
+                            width: 150,
                           ),
                         ),
-                        validator: (value) {
-                          if (value == null || value.isEmpty) {
-                            return "Enter phone number";
-                          }
-                          if (value.length != 10) {
-                            return "Enter valid 10 digit number";
-                          }
-                          return null;
-                        },
-                      ),
-                    ],
+
+                        const SizedBox(height: 30),
+
+                        /// TITLE
+                        const Text(
+                          "Login",
+                          style: TextStyle(
+                            fontSize: 26,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+
+                        const SizedBox(height: 20),
+
+                        /// PHONE FIELD
+                        TextFormField(
+                          controller: phoneController,
+                          keyboardType: TextInputType.phone,
+                          maxLength: 10,
+                          decoration: InputDecoration(
+                            hintText: "Enter Phone Number",
+                            counterText: "",
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                          ),
+                          validator: (value) {
+                            if (value == null || value.isEmpty) {
+                              return "Enter phone number";
+                            }
+                            if (value.length != 10) {
+                              return "Enter valid 10 digit number";
+                            }
+                            return null;
+                          },
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ),

@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../bloc/subscription_bloc/subscription_bloc.dart';
 import '../../bloc/subscription_bloc/subscription_event.dart';
 import '../../bloc/subscription_bloc/subscription_state.dart';
+import '../../config/routes/routes_name.dart';
 import '../../config/session_manager/session_manager.dart';
 import '../../model/subscription_model/subscription_model.dart';
 
@@ -113,15 +114,23 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
         actions: widget.showBackButton
             ? null
             : [
-          const Padding(
-            padding: EdgeInsets.only(right: 16),
-            child: CircleAvatar(
-              backgroundColor: Colors.white,
-              radius: 18,
-              child: Icon(
-                Icons.notifications,
-                color: AppColors.blue,
-                size: 20,
+          Padding(
+            padding: const EdgeInsets.only(right: 16),
+            child: GestureDetector(
+              onTap: () {
+                Navigator.pushNamed(
+                  context,
+                  RoutesName.notificationScreen,
+                );
+              },
+              child: const CircleAvatar(
+                backgroundColor: Colors.white,
+                radius: 18,
+                child: Icon(
+                  Icons.notifications,
+                  color: AppColors.blue,
+                  size: 20,
+                ),
               ),
             ),
           ),

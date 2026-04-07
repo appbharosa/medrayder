@@ -7,7 +7,7 @@
 	<key>CFBundleDevelopmentRegion</key>
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
 	<key>CFBundleDisplayName</key>
-	<string>Executive</string>
+	<string>MED Partner</string>
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
 	<key>CFBundleIdentifier</key>
@@ -20,6 +20,10 @@
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>
 	<string>$(FLUTTER_BUILD_NAME)</string>
+	<key>NSLocationWhenInUseUsageDescription</key>
+    <string>This app does not use location directly but permission is required by system libraries.</string>
+    <key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+    <string>This app does not use location directly.</string>
 	<key>CFBundleSignature</key>
 	<string>????</string>
 	<key>CFBundleVersion</key>
@@ -28,6 +32,10 @@
 	<true/>
 	<key>NSCameraUsageDescription</key>
 	<string>This app needs access to your camera to take photos.</string>
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>This app saves images to your gallery</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>This app accesses gallery to select images</string>
 	<key>UIApplicationSceneManifest</key>
 	<dict>
 		<key>UIApplicationSupportsMultipleScenes</key>

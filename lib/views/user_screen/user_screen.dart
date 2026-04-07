@@ -8,6 +8,7 @@ import '../../bloc/home_bloc/home_event.dart';
 import '../../bloc/user_bloc/user_bloc.dart';
 import '../../bloc/user_bloc/user_event.dart';
 import '../../bloc/user_bloc/user_state.dart';
+import '../../config/routes/routes_name.dart';
 import '../../config/session_manager/session_manager.dart';
 import '../../model/user_model/blood_group_model.dart';
 import '../../model/user_model/user_model.dart';
@@ -132,15 +133,23 @@ class _UserScreenState extends State<UserScreen> {
         actions: widget.showBackButton
             ? null
             : [
-          const Padding(
-            padding: EdgeInsets.only(right: 16),
-            child: CircleAvatar(
-              backgroundColor: Colors.white,
-              radius: 18,
-              child: Icon(
-                Icons.notifications,
-                color: AppColors.blue,
-                size: 20,
+          Padding(
+            padding: const EdgeInsets.only(right: 16),
+            child: GestureDetector(
+              onTap: () {
+                Navigator.pushNamed(
+                  context,
+                  RoutesName.notificationScreen,
+                );
+              },
+              child: const CircleAvatar(
+                backgroundColor: Colors.white,
+                radius: 18,
+                child: Icon(
+                  Icons.notifications,
+                  color: AppColors.blue,
+                  size: 20,
+                ),
               ),
             ),
           ),

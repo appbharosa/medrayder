@@ -1,6 +1,9 @@
 import 'dart:io';
 import 'package:dio/dio.dart';
 import 'package:executive/config/routes/app_url.dart';
+import '../../config/routes/routes_name.dart';
+import '../../config/session_manager/session_manager.dart';
+import '../../main.dart';
 import 'api_exception.dart';
 import 'network_info.dart';
 
@@ -10,6 +13,7 @@ class DioClient {
   final Dio dio;
   final NetworkInfo networkInfo;
   final TokenProvider tokenProvider;
+  static bool isLoggingOut = false; // ✅ ADD THIS
 
   DioClient({
     required this.dio,
@@ -60,16 +64,52 @@ class DioClient {
 
         /// 🔥 ERROR HANDLING
         onError: (error, handler) async {
+          final statusCode = error.response?.statusCode;
+          final data = error.response?.data;
+          final path = error.requestOptions.path;
 
-          if (error.response?.statusCode == 401) {
-            return handler.reject(
-              DioException(
-                requestOptions: error.requestOptions,
-                error: "Session Expired. Please login again",
-              ),
-            );
+          print("🚨 ERROR STATUS: $statusCode");
+          print("🚨 ERROR PATH: $path");
+          print("🚨 ERROR DATA: $data");
+
+          /// ================= ✅ IGNORE PUBLIC APIs =================
+          if (_isPublicApi(path)) {
+            return handler.next(error);
           }
 
+          /// ================= ✅ CHECK TOKEN EXPIRED ONLY =================
+          bool isTokenExpired = false;
+
+          if (statusCode == 401) {
+            final message = data?.toString().toLowerCase() ?? "";
+
+            /// 🔥 ONLY logout for these cases
+            if (message.contains("token expired") ||
+                message.contains("invalid token") ||
+                message.contains("unauthorized")) {
+              isTokenExpired = true;
+            }
+          }
+
+          /// ================= ✅ LOGOUT ONLY IF TOKEN EXPIRED =================
+          if (isTokenExpired && !isLoggingOut) {
+            isLoggingOut = true;
+
+            await SessionManager.clearSession();
+
+            navigatorKey.currentState?.pushNamedAndRemoveUntil(
+              RoutesName.loginScreen,
+                  (route) => false,
+            );
+
+            Future.delayed(const Duration(seconds: 1), () {
+              isLoggingOut = false;
+            });
+
+            return;
+          }
+
+          /// ❗ OTHERWISE DO NOT LOGOUT
           handler.next(error);
         },
       ),
