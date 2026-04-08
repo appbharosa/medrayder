@@ -1,5 +1,6 @@
 import 'package:executive/config/colors/app_colors.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'dart:io';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:image_picker/image_picker.dart';
@@ -303,7 +304,28 @@ class _UserScreenState extends State<UserScreen> {
     );
   }
 }
-
+Widget _inputMobile(String label, TextEditingController c,
+    {bool isMobile = false}) {
+  return Padding(
+    padding: const EdgeInsets.only(bottom: 16),
+    child: TextField(
+      controller: c,
+      keyboardType:
+      isMobile ? TextInputType.number : TextInputType.text,
+      inputFormatters: isMobile
+          ? [
+        FilteringTextInputFormatter.digitsOnly, // ✅ only numbers
+        LengthLimitingTextInputFormatter(10),   // ✅ max 10 digits
+      ]
+          : [],
+      decoration: InputDecoration(
+        labelText: label,
+        border:
+        OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+      ),
+    ),
+  );
+}
 // AddUserBottomSh
 class AddUserBottomSheet extends StatefulWidget {
   final UserBloc userBloc;
@@ -436,7 +458,7 @@ class _AddUserBottomSheetState extends State<AddUserBottomSheet> {
 
               _input("Name", name),
               _input("Email", email),
-              _input("Mobile", mobile),
+              _inputMobile("Mobile", mobile, isMobile: true),
 
               DropdownButtonFormField<String>(
                 initialValue: gender,
@@ -567,6 +589,10 @@ class _AddUserBottomSheetState extends State<AddUserBottomSheet> {
                           return;
                         }
 
+                        if (mobile.text.length != 10) {
+                          _showButtonMessage("Mobile number must be 10 digits");
+                          return;
+                        }
                         final userId = await SessionManager.getUserId();
 
                         widget.userBloc.add(AddUser(

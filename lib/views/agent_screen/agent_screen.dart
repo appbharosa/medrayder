@@ -1,5 +1,6 @@
 import 'package:executive/config/colors/app_colors.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../bloc/agent_bloc/agent_bloc.dart';
 import '../../bloc/agent_bloc/agent_event.dart';
@@ -402,7 +403,7 @@ class _AddAgentBottomSheetState extends State<AddAgentBottomSheet> {
               // Form fields
               _input("Name", name),
               _input("Email", email, keyboardType: TextInputType.emailAddress),
-              _input("Mobile", mobile, keyboardType: TextInputType.phone),
+              _inputMobile("Mobile", mobile, isMobile: true),
 
               Padding(
                 padding: const EdgeInsets.only(bottom: 16),
@@ -523,6 +524,10 @@ class _AddAgentBottomSheetState extends State<AddAgentBottomSheet> {
                               "Please fill all required fields");
                           return;
                         }
+                        if (mobile.text.length != 10) {
+                          _showButtonMessage("Mobile number must be 10 digits");
+                          return;
+                        }
 
                         final userId =
                         await SessionManager.getUserId();
@@ -562,4 +567,26 @@ class _AddAgentBottomSheetState extends State<AddAgentBottomSheet> {
       ),
     );
   }
+}
+Widget _inputMobile(String label, TextEditingController c,
+    {bool isMobile = false}) {
+  return Padding(
+    padding: const EdgeInsets.only(bottom: 16),
+    child: TextField(
+      controller: c,
+      keyboardType:
+      isMobile ? TextInputType.number : TextInputType.text,
+      inputFormatters: isMobile
+          ? [
+        FilteringTextInputFormatter.digitsOnly, // ✅ only numbers
+        LengthLimitingTextInputFormatter(10),   // ✅ max 10 digits
+      ]
+          : [],
+      decoration: InputDecoration(
+        labelText: label,
+        border:
+        OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+      ),
+    ),
+  );
 }

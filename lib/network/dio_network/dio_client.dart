@@ -86,7 +86,9 @@ class DioClient {
             /// 🔥 ONLY logout for these cases
             if (message.contains("token expired") ||
                 message.contains("invalid token") ||
-                message.contains("unauthorized")) {
+                message.contains("unauthorized")||
+                message.contains("unauthenticated"))
+          {
               isTokenExpired = true;
             }
           }
