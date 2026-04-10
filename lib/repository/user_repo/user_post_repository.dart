@@ -1,13 +1,11 @@
-
 import 'dart:io';
-
 import 'package:dio/dio.dart';
-
 import '../../config/routes/app_url.dart';
 import '../../network/dio_network/dio_client.dart';
 
 class UserPostRepository {
   final DioClient dioClient;
+
   UserPostRepository(this.dioClient);
 
   Future<void> postUser({
@@ -19,8 +17,21 @@ class UserPostRepository {
     required String dob,
     required int bloodGroupId,
     required int coverageCategoryId,
+
+    // ✅ ADDRESS
+    required String hno,
+    required String buildingNo,
+    required String landmark,
+    required String address,
+    required String pincode,
+    required String state,
+    required String city,
+    required String addressType,
+    required bool isDefault,
+
     File? image,
   }) async {
+
     FormData formData = FormData.fromMap({
       "user_id": userId,
       "name": name,
@@ -30,11 +41,30 @@ class UserPostRepository {
       "dob": dob,
       "blood_group": bloodGroupId,
       "coverage_category": coverageCategoryId,
-      if (image != null) "image": await MultipartFile.fromFile(image.path, filename: image.path.split("/").last),
+
+      // ✅ ADDRESS
+      "hno": hno,
+      "building_no": buildingNo,
+      "landmark": landmark,
+      "address": address,
+      "pincode": pincode,
+      "state": state,
+      "city": city,
+      "address_type": addressType,
+      "default_address": isDefault ? 1 : 0,
+
+      if (image != null)
+        "image": await MultipartFile.fromFile(
+          image.path,
+          filename: image.path.split("/").last,
+        ),
     });
 
-    final response = await dioClient.post(AppUrl.getUsers, data: formData);
+    final response =
+    await dioClient.post(AppUrl.getUsers, data: formData);
 
-    if (response["status"] != 200) throw response["message"];
+    if (response["status"] != 200) {
+      throw response["message"];
+    }
   }
 }

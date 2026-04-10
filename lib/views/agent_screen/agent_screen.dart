@@ -353,215 +353,218 @@ class _AddAgentBottomSheetState extends State<AddAgentBottomSheet> {
   @override
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      height: MediaQuery.of(context).size.height * 0.75,
-      child: Padding(
-        padding: EdgeInsets.only(
-          left: 16,
-          right: 16,
-          top: 20,
-          bottom: MediaQuery.of(context).viewInsets.bottom + 20,
-        ),
-        child: SingleChildScrollView(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Header
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  const Text(
-                    "Add Agent",
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                  ),
-                  IconButton(
-                    icon: const Icon(Icons.close),
-                    onPressed: () => Navigator.pop(context),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 20),
-
-              // Profile image
-              Center(
-                child: GestureDetector(
-                  onTap: _pickImage,
-                  child: CircleAvatar(
-                    radius: 40,
-                    backgroundColor: Colors.grey[300],
-                    backgroundImage: pickedImage != null
-                        ? FileImage(File(pickedImage!.path))
-                        : null,
-                    child: pickedImage == null
-                        ? const Icon(Icons.camera_alt, size: 40)
-                        : null,
-                  ),
+    return SafeArea(
+      bottom: true,
+      child: SizedBox(
+        height: MediaQuery.of(context).size.height * 0.75,
+        child: Padding(
+          padding: EdgeInsets.only(
+            left: 16,
+            right: 16,
+            top: 20,
+            bottom: MediaQuery.of(context).viewInsets.bottom + 20,
+          ),
+          child: SingleChildScrollView(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Header
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Text(
+                      "Add Agent",
+                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.close),
+                      onPressed: () => Navigator.pop(context),
+                    ),
+                  ],
                 ),
-              ),
-              const SizedBox(height: 20),
+                const SizedBox(height: 20),
 
-              // Form fields
-              _input("Name", name),
-              _input("Email", email, keyboardType: TextInputType.emailAddress),
-              _inputMobile("Mobile", mobile, isMobile: true),
-
-              Padding(
-                padding: const EdgeInsets.only(bottom: 16),
-                child: DropdownButtonFormField<String>(
-                  initialValue: gender,
-                  decoration: InputDecoration(
-                    labelText: "Gender",
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(10),
+                // Profile image
+                Center(
+                  child: GestureDetector(
+                    onTap: _pickImage,
+                    child: CircleAvatar(
+                      radius: 40,
+                      backgroundColor: Colors.grey[300],
+                      backgroundImage: pickedImage != null
+                          ? FileImage(File(pickedImage!.path))
+                          : null,
+                      child: pickedImage == null
+                          ? const Icon(Icons.camera_alt, size: 40)
+                          : null,
                     ),
                   ),
-                  items: ["male", "female", "other"]
-                      .map((e) =>
-                      DropdownMenuItem(value: e, child: Text(e)))
-                      .toList(),
-                  onChanged: (val) => setState(() => gender = val),
                 ),
-              ),
+                const SizedBox(height: 20),
 
-              Padding(
-                padding: const EdgeInsets.only(bottom: 16),
-                child: TextFormField(
-                  controller: dob,
-                  readOnly: true,
-                  decoration: InputDecoration(
-                    labelText: "Date of Birth",
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(10),
+                // Form fields
+                _input("Name", name),
+                _input("Email", email, keyboardType: TextInputType.emailAddress),
+                _inputMobile("Mobile", mobile, isMobile: true),
+
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 16),
+                  child: DropdownButtonFormField<String>(
+                    initialValue: gender,
+                    decoration: InputDecoration(
+                      labelText: "Gender",
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                    ),
+                    items: ["male", "female", "other"]
+                        .map((e) =>
+                        DropdownMenuItem(value: e, child: Text(e)))
+                        .toList(),
+                    onChanged: (val) => setState(() => gender = val),
+                  ),
+                ),
+
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 16),
+                  child: TextFormField(
+                    controller: dob,
+                    readOnly: true,
+                    decoration: InputDecoration(
+                      labelText: "Date of Birth",
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                    ),
+                    onTap: () async {
+                      final picked = await showDatePicker(
+                        context: context,
+                        initialDate: DateTime.now(),
+                        firstDate: DateTime(1900),
+                        lastDate: DateTime.now(),
+                      );
+
+                      if (picked != null) {
+                        dob.text =
+                        "${picked.year}-${picked.month.toString().padLeft(2, '0')}-${picked.day.toString().padLeft(2, '0')}";
+                      }
+                    },
+                  ),
+                ),
+
+                _input("Occupation", occupation),
+
+                const SizedBox(height: 10),
+
+                //  MESSAGE CONTAINER (UPDATED)
+                if (buttonMessage != null)
+                  Container(
+                    width: double.infinity,
+                    padding:
+                    const EdgeInsets.symmetric(vertical: 12, horizontal: 12),
+                    margin: const EdgeInsets.only(bottom: 12),
+                    decoration: BoxDecoration(
+                      color: buttonMessageColor,
+                      borderRadius:
+                      BorderRadius.circular(10),
+                    ),
+                    child: Text(
+                      buttonMessage!,
+                      style: const TextStyle(
+                        color: Colors.white, //  white text
+                        fontWeight: FontWeight.w500,
+                      ),
+                      textAlign: TextAlign.center,
                     ),
                   ),
-                  onTap: () async {
-                    final picked = await showDatePicker(
-                      context: context,
-                      initialDate: DateTime.now(),
-                      firstDate: DateTime(1900),
-                      lastDate: DateTime.now(),
-                    );
 
-                    if (picked != null) {
-                      dob.text =
-                      "${picked.year}-${picked.month.toString().padLeft(2, '0')}-${picked.day.toString().padLeft(2, '0')}";
+                // Save button
+                BlocConsumer<AgentBloc, AgentState>(
+                  bloc: widget.agentBloc,
+                  listener: (context, state) {
+                    if (state is AgentAdded) {
+                      _showButtonMessage(
+                        "Agent Added Successfully",
+                        isError: false,
+                        isSuccess: true,
+                      );
+
+                      Future.delayed(
+                        const Duration(milliseconds: 500),
+                            () => Navigator.pop(context),
+                      );
+                    } else if (state is AgentAddError) {
+                      _showButtonMessage(state.message, isError: true);
                     }
                   },
-                ),
-              ),
+                  builder: (context, state) {
+                    final loading = state is AgentAdding;
 
-              _input("Occupation", occupation),
-
-              const SizedBox(height: 10),
-
-              //  MESSAGE CONTAINER (UPDATED)
-              if (buttonMessage != null)
-                Container(
-                  width: double.infinity,
-                  padding:
-                  const EdgeInsets.symmetric(vertical: 12, horizontal: 12),
-                  margin: const EdgeInsets.only(bottom: 12),
-                  decoration: BoxDecoration(
-                    color: buttonMessageColor,
-                    borderRadius:
-                    BorderRadius.circular(10),
-                  ),
-                  child: Text(
-                    buttonMessage!,
-                    style: const TextStyle(
-                      color: Colors.white, //  white text
-                      fontWeight: FontWeight.w500,
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-                ),
-
-              // Save button
-              BlocConsumer<AgentBloc, AgentState>(
-                bloc: widget.agentBloc,
-                listener: (context, state) {
-                  if (state is AgentAdded) {
-                    _showButtonMessage(
-                      "Agent Added Successfully",
-                      isError: false,
-                      isSuccess: true,
-                    );
-
-                    Future.delayed(
-                      const Duration(milliseconds: 500),
-                          () => Navigator.pop(context),
-                    );
-                  } else if (state is AgentAddError) {
-                    _showButtonMessage(state.message, isError: true);
-                  }
-                },
-                builder: (context, state) {
-                  final loading = state is AgentAdding;
-
-                  return SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.blue,
-                        foregroundColor: Colors.white,
-                        shape: RoundedRectangleBorder(
-                          borderRadius:
-                          BorderRadius.circular(10),
-                        ),
-                        padding:
-                        const EdgeInsets.symmetric(vertical: 14),
-                      ),
-                      onPressed: loading
-                          ? null
-                          : () async {
-                        if (name.text.isEmpty ||
-                            email.text.isEmpty ||
-                            mobile.text.isEmpty ||
-                            gender == null ||
-                            dob.text.isEmpty ||
-                            occupation.text.isEmpty) {
-                          _showButtonMessage(
-                              "Please fill all required fields");
-                          return;
-                        }
-                        if (mobile.text.length != 10) {
-                          _showButtonMessage("Mobile number must be 10 digits");
-                          return;
-                        }
-
-                        final userId =
-                        await SessionManager.getUserId();
-
-                        widget.agentBloc.add(
-                          AddAgent(
-                            name: name.text,
-                            email: email.text,
-                            mobile: mobile.text,
-                            gender: gender!,
-                            dob: dob.text,
-                            occupation: occupation.text,
-                            image: pickedImage != null
-                                ? File(pickedImage!.path)
-                                : null,
-                            userId: userId!,
+                    return SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppColors.blue,
+                          foregroundColor: Colors.white,
+                          shape: RoundedRectangleBorder(
+                            borderRadius:
+                            BorderRadius.circular(10),
                           ),
-                        );
-                      },
-                      child: loading
-                          ? const SizedBox(
-                        width: 24,
-                        height: 24,
-                        child: CircularProgressIndicator(
-                          color: Colors.white,
-                          strokeWidth: 2,
+                          padding:
+                          const EdgeInsets.symmetric(vertical: 14),
                         ),
-                      )
-                          : const Text("Save"),
-                    ),
-                  );
-                },
-              ),
-            ],
+                        onPressed: loading
+                            ? null
+                            : () async {
+                          if (name.text.isEmpty ||
+                              email.text.isEmpty ||
+                              mobile.text.isEmpty ||
+                              gender == null ||
+                              dob.text.isEmpty ||
+                              occupation.text.isEmpty) {
+                            _showButtonMessage(
+                                "Please fill all required fields");
+                            return;
+                          }
+                          if (mobile.text.length != 10) {
+                            _showButtonMessage("Mobile number must be 10 digits");
+                            return;
+                          }
+
+                          final userId =
+                          await SessionManager.getUserId();
+
+                          widget.agentBloc.add(
+                            AddAgent(
+                              name: name.text,
+                              email: email.text,
+                              mobile: mobile.text,
+                              gender: gender!,
+                              dob: dob.text,
+                              occupation: occupation.text,
+                              image: pickedImage != null
+                                  ? File(pickedImage!.path)
+                                  : null,
+                              userId: userId!,
+                            ),
+                          );
+                        },
+                        child: loading
+                            ? const SizedBox(
+                          width: 24,
+                          height: 24,
+                          child: CircularProgressIndicator(
+                            color: Colors.white,
+                            strokeWidth: 2,
+                          ),
+                        )
+                            : const Text("Save"),
+                      ),
+                    );
+                  },
+                ),
+              ],
+            ),
           ),
         ),
       ),

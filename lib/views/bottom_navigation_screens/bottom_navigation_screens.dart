@@ -149,38 +149,42 @@ class _BottomNavigationScreensState
       currentIndex = 0;
     }
 
-    return Scaffold(
-      // drawer: AppDrawer(rootContext: context),
-      // /// 🔷 BODY
-      // body: pages[currentIndex],
-
-      key: scaffoldKey,   // 🔥 IMPORTANT
-      drawer: AppDrawer(rootContext: context),
-      body: pages[currentIndex],
-
-      /// 🔷 BOTTOM NAV
-      bottomNavigationBar: Container(
-        height: 80,
-        decoration: const BoxDecoration(
-          color: Colors.white,
-          boxShadow: [
-            BoxShadow(color: Colors.black12, blurRadius: 10)
-          ],
+    return SafeArea(
+      bottom: true,
+      top: false,
+      child: Scaffold(
+        // drawer: AppDrawer(rootContext: context),
+        // /// 🔷 BODY
+        // body: pages[currentIndex],
+      
+        key: scaffoldKey,   // 🔥 IMPORTANT
+        drawer: AppDrawer(rootContext: context),
+        body: pages[currentIndex],
+      
+        /// 🔷 BOTTOM NAV
+        bottomNavigationBar: Container(
+          height: 80,
+          decoration: const BoxDecoration(
+            color: Colors.white,
+            boxShadow: [
+              BoxShadow(color: Colors.black12, blurRadius: 10)
+            ],
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: List.generate(navItems.length, (index) {
+              final item = navItems[index];
+      
+              return _navItem(
+                item["icon"],
+                item["label"],
+                index,
+              );
+            }),
+          ),
         ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceAround,
-          children: List.generate(navItems.length, (index) {
-            final item = navItems[index];
-
-            return _navItem(
-              item["icon"],
-              item["label"],
-              index,
-            );
-          }),
-        ),
+      
       ),
-
     );
   }
 

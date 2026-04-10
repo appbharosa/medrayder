@@ -3,7 +3,9 @@ import 'package:executive/config/colors/app_colors.dart';
 import 'package:executive/config/routes/routes_name.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_speed_dial/flutter_speed_dial.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../../bloc/home_bloc/home_bloc.dart';
 import '../../bloc/home_bloc/home_state.dart';
 import '../../bloc/notification_bloc/notification_bloc.dart';
@@ -40,6 +42,30 @@ class _HomeScreenState extends State<HomeScreen> {
     super.didChangeDependencies();
 
     context.read<HomeBloc>().add(FetchHomeData());
+  }
+
+  Future<void> openWhatsApp(String phone) async {
+    final url = Uri.parse("whatsapp://send?phone=$phone");
+
+    if (await canLaunchUrl(url)) {
+      await launchUrl(url);
+    } else {
+      // 👉 Redirect to Play Store
+      final playStore = Uri.parse(
+          "https://wa.me/919010492345");
+      await launchUrl(playStore);
+    }
+  }
+
+  Future<void> makeCall(String phone) async {
+    final url = Uri.parse("tel:$phone");
+
+    if (await canLaunchUrl(url)) {
+      await launchUrl(url);
+    } else {
+      // 👉 Optional fallback
+      throw "Call not supported";
+    }
   }
 
   Future<void> _loadUserData() async {
@@ -146,6 +172,44 @@ class _HomeScreenState extends State<HomeScreen> {
                 );
               },
             ),
+          ),
+        ],
+      ),
+
+      floatingActionButton: SpeedDial(
+        icon: Icons.support_agent,
+        activeIcon: Icons.close,
+        backgroundColor: AppColors.blue,
+        foregroundColor: Colors.white,
+        spacing: 10,
+        spaceBetweenChildren: 10,
+
+        children: [
+
+          //  WhatsApp
+          SpeedDialChild(
+            child: Padding(
+              padding: const EdgeInsets.all(6),
+              child: Image.asset(
+                "assets/whatsapp.webp",
+                fit: BoxFit.contain,
+              ),
+            ),
+            backgroundColor: Colors.white, // better for image visibility
+            label: "WhatsApp",
+            onTap: () {
+              openWhatsApp(""); // your number
+            },
+          ),
+
+          //  Call
+          SpeedDialChild(
+            child: const Icon(Icons.call, color: Colors.white),
+            backgroundColor: Colors.blue,
+            label: "Call",
+            onTap: () {
+              makeCall("9010492345");
+            },
           ),
         ],
       ),

@@ -92,215 +92,219 @@ class _UserScreenState extends State<UserScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppColors.whiteColor,
-      appBar: AppBar(
-        backgroundColor: AppColors.blue,
-        elevation: 0,
+    return SafeArea(
+      bottom: true,
+      top: false,
+      child: Scaffold(
+        backgroundColor: AppColors.whiteColor,
+        appBar: AppBar(
+          backgroundColor: AppColors.blue,
+          elevation: 0,
 
-        iconTheme: const IconThemeData(
-          color: Colors.white,
+          iconTheme: const IconThemeData(
+            color: Colors.white,
+          ),
+
+          /// 🔥 LEFT SIDE
+          leading: widget.showBackButton
+              ? IconButton(
+            icon: const Icon(Icons.arrow_back),
+            onPressed: () => Navigator.pop(context),
+          )
+              : Builder(
+            builder: (context) {
+              return IconButton(
+                icon: const Icon(Icons.menu),
+                onPressed: () {
+                  widget.scaffoldKey.currentState?.openDrawer();
+                },
+              );
+            },
+          ),
+
+          /// 🔥 TITLE
+          title: const Text(
+            "Users ",
+            style: TextStyle(
+              fontSize: 19,
+              color: Colors.white,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+          centerTitle: true,
+
+          /// 🔥 RIGHT SIDE (ONLY FOR DRAWER MODE)
+          actions: widget.showBackButton
+              ? null
+              : [
+            Padding(
+              padding: const EdgeInsets.only(right: 16),
+              child: GestureDetector(
+                onTap: () {
+                  Navigator.pushNamed(
+                    context,
+                    RoutesName.notificationScreen,
+                  );
+                },
+                child: const CircleAvatar(
+                  backgroundColor: Colors.white,
+                  radius: 18,
+                  child: Icon(
+                    Icons.notifications,
+                    color: AppColors.blue,
+                    size: 20,
+                  ),
+                ),
+              ),
+            ),
+
+            Padding(
+              padding: const EdgeInsets.only(right: 12),
+              child: CircleAvatar(
+                radius: 18,
+                backgroundColor: Colors.white,
+                backgroundImage: (profileImage != null &&
+                    profileImage!.isNotEmpty)
+                    ? NetworkImage(profileImage!)
+                    : const AssetImage("assets/userLogo.png")
+                as ImageProvider,
+              ),
+            ),
+          ],
+
+          /// 🔥 SEARCH BAR
+          bottom: PreferredSize(
+            preferredSize: const Size.fromHeight(60),
+            child: Padding(
+              padding: const EdgeInsets.all(12),
+              child: TextField(
+                controller: searchController,
+                onChanged: _filterUsers,
+                decoration: InputDecoration(
+                  hintText: "Search Users...",
+                  filled: true,
+                  fillColor: Colors.white,
+                  prefixIcon: const Icon(Icons.search),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10),
+                    borderSide: BorderSide.none,
+                  ),
+                ),
+              ),
+            ),
+          ),
         ),
 
-        /// 🔥 LEFT SIDE
-        leading: widget.showBackButton
-            ? IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: () => Navigator.pop(context),
-        )
-            : Builder(
-          builder: (context) {
-            return IconButton(
-              icon: const Icon(Icons.menu),
-              onPressed: () {
-                widget.scaffoldKey.currentState?.openDrawer();
+        body: BlocConsumer<UserBloc, UserState>(
+          listenWhen: (prev, curr) =>
+          curr is UserLoaded || curr is UserActionState,
+          buildWhen: (prev, curr) => curr is! UserActionState,
+
+          listener: (context, state) {
+            if (state is UserLoaded) {
+              allUsers = List.from(state.users);
+
+              /// 🔥 IMPORTANT FIX
+              if (searchController.text.isEmpty) {
+                displayedUsers = List.from(allUsers);
+              } else {
+                _filterUsers(searchController.text);
+              }
+
+              setState(() {});
+            }
+
+            if (state is UserAdded) {
+              userBloc.add(FetchUsers(reset: true));
+            }
+          },
+
+          builder: (context, state) {
+            if (state is UserLoading && allUsers.isEmpty) {
+              return const Center(child: CircularProgressIndicator());
+            }
+
+            if (state is UserError) {
+              return const Center(child: Text("No Data Found"));
+            }
+
+            if (displayedUsers.isEmpty) {
+              return const Center(child: Text("No Users Found"));
+            }
+
+            return ListView.builder(
+              controller: scrollController,
+              padding: const EdgeInsets.all(16),
+
+              itemCount: displayedUsers.length +
+                  (state is UserLoading ? 1 : 0),
+
+              itemBuilder: (_, index) {
+
+                /// 🔥 LOADER AT BOTTOM
+                if (index == displayedUsers.length) {
+                  return const Padding(
+                    padding: EdgeInsets.all(10),
+                    child: Center(child: CircularProgressIndicator()),
+                  );
+                }
+
+                final user = displayedUsers[index];
+
+                return Container(
+                  margin: const EdgeInsets.only(bottom: 12),
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(10),
+                    boxShadow: const [
+                      BoxShadow(
+                          color: Colors.grey,
+                          blurRadius: 3,
+                          offset: Offset(0, 2)),
+                    ],
+                  ),
+                  child: Row(
+                    children: [
+                      CircleAvatar(
+                        radius: 35,
+                        backgroundImage: NetworkImage(user.image),
+                      ),
+                      const SizedBox(width: 18),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(user.name,
+                                style: const TextStyle(
+                                    fontWeight: FontWeight.bold)),
+                            const SizedBox(height: 4),
+                            Text(user.email),
+                            const SizedBox(height: 4),
+                            Text(user.mobile),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                );
               },
             );
           },
         ),
 
-        /// 🔥 TITLE
-        title: const Text(
-          "Users ",
-          style: TextStyle(
-            fontSize: 19,
-            color: Colors.white,
-            fontWeight: FontWeight.w500,
+
+        floatingActionButton: FloatingActionButton.extended(
+          onPressed: _openAddUserBottomSheet,
+          label: const Text(
+            "Add User",
+            style: TextStyle(color: AppColors.whiteColor),
           ),
+          backgroundColor: AppColors.blue,
         ),
-        centerTitle: true,
 
-        /// 🔥 RIGHT SIDE (ONLY FOR DRAWER MODE)
-        actions: widget.showBackButton
-            ? null
-            : [
-          Padding(
-            padding: const EdgeInsets.only(right: 16),
-            child: GestureDetector(
-              onTap: () {
-                Navigator.pushNamed(
-                  context,
-                  RoutesName.notificationScreen,
-                );
-              },
-              child: const CircleAvatar(
-                backgroundColor: Colors.white,
-                radius: 18,
-                child: Icon(
-                  Icons.notifications,
-                  color: AppColors.blue,
-                  size: 20,
-                ),
-              ),
-            ),
-          ),
 
-          Padding(
-            padding: const EdgeInsets.only(right: 12),
-            child: CircleAvatar(
-              radius: 18,
-              backgroundColor: Colors.white,
-              backgroundImage: (profileImage != null &&
-                  profileImage!.isNotEmpty)
-                  ? NetworkImage(profileImage!)
-                  : const AssetImage("assets/userLogo.png")
-              as ImageProvider,
-            ),
-          ),
-        ],
-
-        /// 🔥 SEARCH BAR
-        bottom: PreferredSize(
-          preferredSize: const Size.fromHeight(60),
-          child: Padding(
-            padding: const EdgeInsets.all(12),
-            child: TextField(
-              controller: searchController,
-              onChanged: _filterUsers,
-              decoration: InputDecoration(
-                hintText: "Search Users...",
-                filled: true,
-                fillColor: Colors.white,
-                prefixIcon: const Icon(Icons.search),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(10),
-                  borderSide: BorderSide.none,
-                ),
-              ),
-            ),
-          ),
-        ),
       ),
-
-      body: BlocConsumer<UserBloc, UserState>(
-        listenWhen: (prev, curr) =>
-        curr is UserLoaded || curr is UserActionState,
-        buildWhen: (prev, curr) => curr is! UserActionState,
-
-        listener: (context, state) {
-          if (state is UserLoaded) {
-            allUsers = List.from(state.users);
-
-            /// 🔥 IMPORTANT FIX
-            if (searchController.text.isEmpty) {
-              displayedUsers = List.from(allUsers);
-            } else {
-              _filterUsers(searchController.text);
-            }
-
-            setState(() {});
-          }
-
-          if (state is UserAdded) {
-            userBloc.add(FetchUsers(reset: true));
-          }
-        },
-
-        builder: (context, state) {
-          if (state is UserLoading && allUsers.isEmpty) {
-            return const Center(child: CircularProgressIndicator());
-          }
-
-          if (state is UserError) {
-            return const Center(child: Text("No Data Found"));
-          }
-
-          if (displayedUsers.isEmpty) {
-            return const Center(child: Text("No Users Found"));
-          }
-
-          return ListView.builder(
-            controller: scrollController,
-            padding: const EdgeInsets.all(16),
-
-            itemCount: displayedUsers.length +
-                (state is UserLoading ? 1 : 0),
-
-            itemBuilder: (_, index) {
-
-              /// 🔥 LOADER AT BOTTOM
-              if (index == displayedUsers.length) {
-                return const Padding(
-                  padding: EdgeInsets.all(10),
-                  child: Center(child: CircularProgressIndicator()),
-                );
-              }
-
-              final user = displayedUsers[index];
-
-              return Container(
-                margin: const EdgeInsets.only(bottom: 12),
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(10),
-                  boxShadow: const [
-                    BoxShadow(
-                        color: Colors.grey,
-                        blurRadius: 3,
-                        offset: Offset(0, 2)),
-                  ],
-                ),
-                child: Row(
-                  children: [
-                    CircleAvatar(
-                      radius: 35,
-                      backgroundImage: NetworkImage(user.image),
-                    ),
-                    const SizedBox(width: 18),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(user.name,
-                              style: const TextStyle(
-                                  fontWeight: FontWeight.bold)),
-                          const SizedBox(height: 4),
-                          Text(user.email),
-                          const SizedBox(height: 4),
-                          Text(user.mobile),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              );
-            },
-          );
-        },
-      ),
-
-
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: _openAddUserBottomSheet,
-        label: const Text(
-          "Add User",
-          style: TextStyle(color: AppColors.whiteColor),
-        ),
-        backgroundColor: AppColors.blue,
-      ),
-
-
     );
   }
 }
@@ -326,6 +330,60 @@ Widget _inputMobile(String label, TextEditingController c,
     ),
   );
 }
+
+Widget _rowInput(String label, TextEditingController c) {
+  return Expanded(
+    child: Padding(
+      padding: const EdgeInsets.only(right: 8, bottom: 16),
+      child: TextField(
+        controller: c,
+        decoration: InputDecoration(
+          labelText: label,
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(10),
+          ),
+        ),
+      ),
+    ),
+  );
+}
+
+
+
+
+Widget _rowPinCodeInput(
+    String label,
+    TextEditingController c, {
+      bool isPincode = false, // ✅ ADD THIS
+    }) {
+  return Expanded(
+    child: Padding(
+      padding: const EdgeInsets.only(right: 8, bottom: 16),
+      child: TextField(
+        controller: c,
+
+        // ✅ keypad control
+        keyboardType:
+        isPincode ? TextInputType.number : TextInputType.text,
+
+        // ✅ input restriction
+        inputFormatters: isPincode
+            ? [
+          FilteringTextInputFormatter.digitsOnly,
+          LengthLimitingTextInputFormatter(6),
+        ]
+            : null,
+
+        decoration: InputDecoration(
+          labelText: label,
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(10),
+          ),
+        ),
+      ),
+    ),
+  );
+}
 // AddUserBottomSh
 class AddUserBottomSheet extends StatefulWidget {
   final UserBloc userBloc;
@@ -347,6 +405,17 @@ class _AddUserBottomSheetState extends State<AddUserBottomSheet> {
   final email = TextEditingController();
   final mobile = TextEditingController();
   final dob = TextEditingController();
+
+  final hno = TextEditingController();
+  final buildingNo = TextEditingController();
+  final landmark = TextEditingController();
+  final address = TextEditingController();
+  final pincode = TextEditingController();
+  final stateCtrl = TextEditingController();
+  final city = TextEditingController();
+
+  String? addressType; // Permanent / Temporary
+  bool isDefaultAddress = false;
 
   String? gender;
   int? selectedBloodGroupId;
@@ -421,215 +490,321 @@ class _AddUserBottomSheetState extends State<AddUserBottomSheet> {
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      height: MediaQuery.of(context).size.height * 0.75,
-      child: Padding(
-        padding: EdgeInsets.only(
-            left: 16,
-            right: 16,
-            top: 20,
-            bottom: MediaQuery.of(context).viewInsets.bottom + 20),
-        child: SingleChildScrollView(
-          child: Column(
-            children: [
-              Align(
-                alignment: Alignment.topLeft,
-                child: const Text("Add User",
-                    style: TextStyle(
-                        fontSize: 18, fontWeight: FontWeight.bold)),
-              ),
-
-              const SizedBox(height: 20),
-
-              GestureDetector(
-                onTap: _pickImage,
-                child: CircleAvatar(
-                  radius: 40,
-                  backgroundImage: pickedImage != null
-                      ? FileImage(File(pickedImage!.path))
-                      : null,
-                  child: pickedImage == null
-                      ? const Icon(Icons.camera_alt)
-                      : null,
+    return SafeArea(
+      bottom: true,
+      child: SizedBox(
+        height: MediaQuery.of(context).size.height * 0.75,
+        child: Padding(
+          padding: EdgeInsets.only(
+              left: 16,
+              right: 16,
+              top: 20,
+              bottom: MediaQuery.of(context).viewInsets.bottom + 20),
+          child: SingleChildScrollView(
+            child: Column(
+              children: [
+                Align(
+                  alignment: Alignment.topLeft,
+                  child: const Text("Add User",
+                      style: TextStyle(
+                          fontSize: 18, fontWeight: FontWeight.bold)),
                 ),
-              ),
 
-              const SizedBox(height: 20),
+                const SizedBox(height: 20),
 
-              _input("Name", name),
-              _input("Email", email),
-              _inputMobile("Mobile", mobile, isMobile: true),
-
-              DropdownButtonFormField<String>(
-                initialValue: gender,
-                decoration: InputDecoration(
-                    labelText: "Gender",
-                    border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(10))),
-                items: ["male", "female", "other"]
-                    .map((e) =>
-                    DropdownMenuItem(value: e, child: Text(e)))
-                    .toList(),
-                onChanged: (v) => setState(() => gender = v),
-              ),
-
-              const SizedBox(height: 16),
-
-              DropdownButtonFormField<int>(
-                initialValue: selectedBloodGroupId,
-                decoration: InputDecoration(
-                    labelText: "Blood Group",
-                    border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(10))),
-                items: bloodGroups
-                    .map((e) =>
-                    DropdownMenuItem(value: e.id, child: Text(e.name)))
-                    .toList(),
-                onChanged: (v) => setState(() => selectedBloodGroupId = v),
-              ),
-
-              const SizedBox(height: 16),
-
-              DropdownButtonFormField<int>(
-                initialValue: selectedCategoryId,
-                decoration: InputDecoration(
-                    labelText: "Category",
-                    border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(10))),
-                items: categories
-                    .map((e) =>
-                    DropdownMenuItem(value: e.id, child: Text(e.name)))
-                    .toList(),
-                onChanged: (v) => setState(() => selectedCategoryId = v),
-              ),
-
-              const SizedBox(height: 16),
-
-              TextField(
-                controller: dob,
-                readOnly: true,
-                decoration: InputDecoration(
-                  labelText: "DOB",
-                  border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(10)),
-                ),
-                onTap: () async {
-                  final picked = await showDatePicker(
-                    context: context,
-                    initialDate: DateTime.now(),
-                    firstDate: DateTime(1900),
-                    lastDate: DateTime.now(),
-                  );
-
-                  if (picked != null) {
-                    dob.text =
-                    "${picked.year}-${picked.month.toString().padLeft(2, '0')}-${picked.day.toString().padLeft(2, '0')}";
-                  }
-                },
-              ),
-
-              const SizedBox(height: 20),
-
-              if (buttonMessage != null)
-                Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.all(12),
-                  margin: const EdgeInsets.only(bottom: 12),
-                  decoration: BoxDecoration(
-                    color: buttonMessageColor,
-                    borderRadius: BorderRadius.circular(10),
+                GestureDetector(
+                  onTap: _pickImage,
+                  child: CircleAvatar(
+                    radius: 40,
+                    backgroundImage: pickedImage != null
+                        ? FileImage(File(pickedImage!.path))
+                        : null,
+                    child: pickedImage == null
+                        ? const Icon(Icons.camera_alt)
+                        : null,
                   ),
-                  child: Text(buttonMessage!,
-                      style: const TextStyle(color: Colors.white)),
                 ),
 
-              BlocConsumer<UserBloc, UserState>(
-                bloc: widget.userBloc,
-                listener: (context, state) async {
-                  if (state is UserAdded) {
-                    Navigator.pop(context);
+                const SizedBox(height: 20),
 
-                    ScaffoldMessenger.of(widget.rootContext)
-                        .showSnackBar(const SnackBar(
-                      content: Text("User Added Successfully"),
-                      backgroundColor: Colors.green,
-                    ));
-                  }
+                _input("Name", name),
+                _input("Email", email),
+                _inputMobile("Mobile", mobile, isMobile: true),
 
-                  if (state is UserAddError) {
-                    _showButtonMessage(state.message);
-                  }
-                },
-                builder: (context, state) {
-                  final loading = state is UserAdding;
+                DropdownButtonFormField<String>(
+                  initialValue: gender,
+                  decoration: InputDecoration(
+                      labelText: "Gender",
+                      border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10))),
+                  items: ["male", "female", "other"]
+                      .map((e) =>
+                      DropdownMenuItem(value: e, child: Text(e)))
+                      .toList(),
+                  onChanged: (v) => setState(() => gender = v),
+                ),
 
+                const SizedBox(height: 16),
 
-                  return SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.blue, // ✅ blue background
-                        foregroundColor: Colors.white, // ✅ text color white
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10), // ✅ radius 10
-                        ),
-                        padding: const EdgeInsets.symmetric(vertical: 14), // optional height
-                      ),
-                      onPressed: loading
-                          ? null
-                          : () async {
-                        if (name.text.isEmpty ||
-                            email.text.isEmpty ||
-                            mobile.text.isEmpty ||
-                            gender == null ||
-                            dob.text.isEmpty ||
-                            selectedBloodGroupId == null ||
-                            selectedCategoryId == null) {
-                          _showButtonMessage("Please fill all fields");
-                          return;
-                        }
+                DropdownButtonFormField<int>(
+                  initialValue: selectedBloodGroupId,
+                  decoration: InputDecoration(
+                      labelText: "Blood Group",
+                      border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10))),
+                  items: bloodGroups
+                      .map((e) =>
+                      DropdownMenuItem(value: e.id, child: Text(e.name)))
+                      .toList(),
+                  onChanged: (v) => setState(() => selectedBloodGroupId = v),
+                ),
 
-                        if (mobile.text.length != 10) {
-                          _showButtonMessage("Mobile number must be 10 digits");
-                          return;
-                        }
-                        final userId = await SessionManager.getUserId();
+                const SizedBox(height: 16),
 
-                        widget.userBloc.add(AddUser(
-                          name: name.text,
-                          email: email.text,
-                          mobile: mobile.text,
-                          gender: gender!,
-                          dob: dob.text,
-                          bloodGroupId: selectedBloodGroupId!,
-                          coverageCategoryId: selectedCategoryId!,
-                          userId: userId!,
-                          image: pickedImage != null
-                              ? File(pickedImage!.path)
-                              : null,
-                        ));
-                      },
-                      child: loading
-                          ? const SizedBox(
-                        height: 20,
-                        width: 20,
-                        child: CircularProgressIndicator(
-                          color: Colors.white,
-                          strokeWidth: 2,
-                        ),
-                      )
-                          : const Text(
-                        "Save",
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
+                DropdownButtonFormField<int>(
+                  initialValue: selectedCategoryId,
+                  decoration: InputDecoration(
+                      labelText: "Category",
+                      border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10))),
+                  items: categories
+                      .map((e) =>
+                      DropdownMenuItem(value: e.id, child: Text(e.name)))
+                      .toList(),
+                  onChanged: (v) => setState(() => selectedCategoryId = v),
+                ),
+
+                const SizedBox(height: 16),
+
+                TextField(
+                  controller: dob,
+                  readOnly: true,
+                  decoration: InputDecoration(
+                    labelText: "DOB",
+                    border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10)),
+                  ),
+                  onTap: () async {
+                    final picked = await showDatePicker(
+                      context: context,
+                      initialDate: DateTime.now(),
+                      firstDate: DateTime(1900),
+                      lastDate: DateTime.now(),
+                    );
+
+                    if (picked != null) {
+                      dob.text =
+                      "${picked.year}-${picked.month.toString().padLeft(2, '0')}-${picked.day.toString().padLeft(2, '0')}";
+                    }
+                  },
+                ),
+
+                const SizedBox(height: 20),
+
+                Align(
+                  alignment: Alignment.topLeft,
+                  child: Text(
+                    "Address Details",
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                  ),
+                ),
+
+                const SizedBox(height: 16),
+
+      // Address Type Dropdown
+                DropdownButtonFormField<String>(
+                  initialValue: addressType,
+                  decoration: InputDecoration(
+                    labelText: "Address Type",
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10),
                     ),
-                  );
-                },
-              )
-            ],
+                  ),
+                  items: ["Permanent Address", "Temporary Address"]
+                      .map((e) => DropdownMenuItem(value: e, child: Text(e)))
+                      .toList(),
+                  onChanged: (v) => setState(() => addressType = v),
+                ),
+
+                const SizedBox(height: 16),
+
+      // Row 1
+                Row(
+                  children: [
+                    _rowInput("H.No", hno),
+                    _rowInput("Building No", buildingNo),
+                  ],
+                ),
+
+      // Row 2
+                Row(
+                  children: [
+                    _rowInput("Landmark", landmark),
+                    _rowPinCodeInput("Pincode", pincode, isPincode: true),
+                  ],
+                ),
+
+      // Row 3
+                Row(
+                  children: [
+                    _rowInput("State", stateCtrl),
+                    _rowInput("City", city),
+                  ],
+                ),
+
+      // Full Address
+                _input("Address", address),
+
+      // Default Address Checkbox
+                CheckboxListTile(
+                  contentPadding: EdgeInsets.zero,
+                  title: const Text("Set as Default Address"),
+                  value: isDefaultAddress,
+                  onChanged: (v) {
+                    setState(() => isDefaultAddress = v ?? false);
+                  },
+                ),
+
+                const SizedBox(height: 20),
+
+                if (buttonMessage != null)
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(12),
+                    margin: const EdgeInsets.only(bottom: 12),
+                    decoration: BoxDecoration(
+                      color: buttonMessageColor,
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: Text(buttonMessage!,
+                        style: const TextStyle(color: Colors.white)),
+                  ),
+
+                BlocConsumer<UserBloc, UserState>(
+                  bloc: widget.userBloc,
+                  listener: (context, state) async {
+                    if (state is UserAdded) {
+                      Navigator.pop(context);
+
+                      ScaffoldMessenger.of(widget.rootContext)
+                          .showSnackBar(const SnackBar(
+                        content: Text("User Added Successfully"),
+                        backgroundColor: Colors.green,
+                      ));
+                    }
+
+                    if (state is UserAddError) {
+                      _showButtonMessage(state.message);
+                    }
+                  },
+                  builder: (context, state) {
+                    final loading = state is UserAdding;
+
+
+                    return SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppColors.blue, //  blue background
+                          foregroundColor: Colors.white, //  text color white
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10), //  radius 10
+                          ),
+                          padding: const EdgeInsets.symmetric(vertical: 14), // optional height
+                        ),
+                        onPressed: loading
+                            ? null
+                            : () async {
+
+                          //  BASIC VALIDATION
+                          if (name.text.isEmpty ||
+                              email.text.isEmpty ||
+                              mobile.text.isEmpty ||
+                              gender == null ||
+                              dob.text.isEmpty ||
+                              selectedBloodGroupId == null ||
+                              selectedCategoryId == null) {
+                            _showButtonMessage("Please fill all fields");
+                            return;
+                          }
+
+                          //  MOBILE VALIDATION
+                          if (mobile.text.length != 10) {
+                            _showButtonMessage("Mobile number must be 10 digits");
+                            return;
+                          }
+                          if (pincode.text.length != 6) {
+                            _showButtonMessage("Pincode must be 6 digits");
+                            return;
+                          }
+
+                          // ✅ ADDRESS VALIDATION
+                          if (addressType == null ||
+                              hno.text.isEmpty ||
+                              buildingNo.text.isEmpty ||
+                              address.text.isEmpty ||
+                              pincode.text.isEmpty ||
+                              stateCtrl.text.isEmpty ||
+                              city.text.isEmpty) {
+                            _showButtonMessage("Please fill address fields");
+                            return;
+                          }
+
+                          final userId = await SessionManager.getUserId();
+
+                          // ✅ SEND FULL DATA (IMPORTANT FIX)
+                          widget.userBloc.add(AddUser(
+                            name: name.text,
+                            email: email.text,
+                            mobile: mobile.text,
+                            gender: gender!,
+                            dob: dob.text,
+                            bloodGroupId: selectedBloodGroupId!,
+                            coverageCategoryId: selectedCategoryId!,
+                            userId: userId!,
+                            image: pickedImage != null
+                                ? File(pickedImage!.path)
+                                : null,
+
+                            // 🔥 ADDRESS DATA (MISSING BEFORE)
+                            hno: hno.text,
+                            buildingNo: buildingNo.text,
+                            landmark: landmark.text,
+                            address: address.text,
+                            pincode: pincode.text,
+                            state: stateCtrl.text,
+                            city: city.text,
+
+                            // ✅ convert UI value → API value
+                            addressType: addressType == "Permanent Address"
+                                ? "permanent"
+                                : "temporary",
+
+                            isDefault: isDefaultAddress,
+                          ));
+                        },
+                        child: loading
+                            ? const SizedBox(
+                          height: 20,
+                          width: 20,
+                          child: CircularProgressIndicator(
+                            color: Colors.white,
+                            strokeWidth: 2,
+                          ),
+                        )
+                            : const Text(
+                          "Save",
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                    );
+                  },
+                )
+              ],
+            ),
           ),
         ),
       ),

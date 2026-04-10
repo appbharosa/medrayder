@@ -36,11 +36,13 @@ class AboutScreen extends StatelessWidget {
           } else if (state is AboutError) {
             return Center(child: Text(state.message));
           } else if (state is AboutLoaded) {
-            return Padding(
-              padding: const EdgeInsets.all(16),
-              child: Text(
-                state.about.name,
-                style: const TextStyle(fontSize: 16),
+            return SingleChildScrollView(
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Text(
+                  state.about.name,
+                  style: const TextStyle(fontSize: 16),
+                ),
               ),
             );
           }

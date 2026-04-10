@@ -48,6 +48,8 @@ dependencies:
   share_plus: ^12.0.1
   url_launcher: ^6.3.2
   package_info_plus: ^9.0.1
+  pin_code_fields: ^8.0.1
+  flutter_speed_dial: ^7.0.0
 
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.

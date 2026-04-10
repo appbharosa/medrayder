@@ -63,6 +63,17 @@ class UserBloc extends Bloc<UserEvent, UserState> {
           bloodGroupId: event.bloodGroupId,
           coverageCategoryId: event.coverageCategoryId,
           image: event.image,
+
+          // ✅ ADDRESS FROM EVENT
+          hno: event.hno,
+          buildingNo: event.buildingNo,
+          landmark: event.landmark,
+          address: event.address,
+          pincode: event.pincode,
+          state: event.state,
+          city: event.city,
+          addressType: event.addressType,
+          isDefault: event.isDefault,
         );
 
         emit(UserAdded()); // ✅ SUCCESS
