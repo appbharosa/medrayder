@@ -43,91 +43,94 @@ class _BankScreenState extends State<BankScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        backgroundColor: AppColors.blue,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.white),
-          onPressed: () => Navigator.pop(context),
+    return SafeArea(
+      bottom: true,
+      child: Scaffold(
+        appBar: AppBar(
+          backgroundColor: AppColors.blue,
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back, color: Colors.white),
+            onPressed: () => Navigator.pop(context),
+          ),
+          title: const Text(
+            "Bank Details",
+            style: TextStyle(fontSize: 19, color: Colors.white, fontWeight: FontWeight.w500),
+          ),
+          centerTitle: true,
         ),
-        title: const Text(
-          "Bank Details",
-          style: TextStyle(fontSize: 19, color: Colors.white, fontWeight: FontWeight.w500),
-        ),
-        centerTitle: true,
-      ),
 
-      body: BlocConsumer<BankBloc, BankState>(
-        listener: (context, state) {
-          if (state is BankError) {
-            _showMsg(state.message, bgColor: Colors.red, ctx: context);
-          } else if (state is BankLoaded) {
-            _banks = state.banks;
-          }
-        },
-        builder: (context, state) {
-          return Stack(
-            children: [
-              // Show list or "No Bank Details Found"
-              if (_banks.isEmpty)
-                const Center(child: Text("No Bank Details Found"))
-              else
-                ListView.builder(
-                  padding: const EdgeInsets.all(16),
-                  itemCount: _banks.length,
-                  itemBuilder: (_, i) {
-                    final bank = _banks[i];
-                    return Card(
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
-                      elevation: 4,
-                      margin: const EdgeInsets.only(bottom: 16),
-                      child: Padding(
-                        padding: const EdgeInsets.all(16),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Text(bank.accountName,
-                                    style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                                IconButton(
-                                  icon: const Icon(Icons.edit, color: Colors.blue),
-                                  onPressed: () => _openBottomSheet(bank: bank),
-                                )
-                              ],
-                            ),
-                            const SizedBox(height: 10),
-                            _buildField("Bank Name", bank.bankName),
-                            _buildField("Branch", bank.branchName ?? "-"),
-                            _buildField("Account Number", bank.accountNumber),
-                            _buildField("IFSC Code", bank.ifscCode),
-                          ],
+        body: BlocConsumer<BankBloc, BankState>(
+          listener: (context, state) {
+            if (state is BankError) {
+              _showMsg(state.message, bgColor: Colors.red, ctx: context);
+            } else if (state is BankLoaded) {
+              _banks = state.banks;
+            }
+          },
+          builder: (context, state) {
+            return Stack(
+              children: [
+                // Show list or "No Bank Details Found"
+                if (_banks.isEmpty)
+                  const Center(child: Text("No Bank Details Found"))
+                else
+                  ListView.builder(
+                    padding: const EdgeInsets.all(16),
+                    itemCount: _banks.length,
+                    itemBuilder: (_, i) {
+                      final bank = _banks[i];
+                      return Card(
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+                        elevation: 4,
+                        margin: const EdgeInsets.only(bottom: 16),
+                        child: Padding(
+                          padding: const EdgeInsets.all(16),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Text(bank.accountName,
+                                      style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                                  IconButton(
+                                    icon: const Icon(Icons.edit, color: Colors.blue),
+                                    onPressed: () => _openBottomSheet(bank: bank),
+                                  )
+                                ],
+                              ),
+                              const SizedBox(height: 10),
+                              _buildField("Bank Name", bank.bankName),
+                              _buildField("Branch", bank.branchName ?? "-"),
+                              _buildField("Account Number", bank.accountNumber),
+                              _buildField("IFSC Code", bank.ifscCode),
+                            ],
+                          ),
                         ),
-                      ),
-                    );
-                  },
-                ),
+                      );
+                    },
+                  ),
 
-              // Loader overlay
-              if (state is BankLoading)
-                Positioned.fill(
-                  child: Container(
-                    color: Colors.black45,
-                    child: const Center(
-                      child: CircularProgressIndicator(color: Colors.white),
+                // Loader overlay
+                if (state is BankLoading)
+                  Positioned.fill(
+                    child: Container(
+                      color: Colors.black45,
+                      child: const Center(
+                        child: CircularProgressIndicator(color: Colors.white),
+                      ),
                     ),
                   ),
-                ),
-            ],
-          );
-        },
-      ),
+              ],
+            );
+          },
+        ),
 
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () => _openBottomSheet(),
-        icon: const Icon(Icons.add),
-        label: const Text("Add Bank"),
+        floatingActionButton: FloatingActionButton.extended(
+          onPressed: () => _openBottomSheet(),
+          icon: const Icon(Icons.add),
+          label: const Text("Add Bank"),
+        ),
       ),
     );
   }
@@ -268,6 +271,8 @@ class _BankScreenState extends State<BankScreen> {
                                 child: const Text("Save", style: TextStyle(fontSize: 16)),
                               ),
                             ),
+
+                            SizedBox(height: 30,)
                           ],
                         ),
                       ),
