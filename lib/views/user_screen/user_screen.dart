@@ -488,6 +488,7 @@ class _AddUserBottomSheetState extends State<AddUserBottomSheet> {
                   ),
                 ],
               ),
+
               child: Row(
                 children: [
                   Icon(
