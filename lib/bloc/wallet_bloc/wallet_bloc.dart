@@ -1,15 +1,6 @@
 import 'package:bloc/bloc.dart';
 import 'package:executive/bloc/wallet_bloc/wallet_event.dart';
 import 'package:executive/bloc/wallet_bloc/wallet_state.dart';
-
-import '../../config/session_manager/session_manager.dart';
-import '../../model/wallet_model/wallet_model.dart';
-import '../../repository/wallet_repository/wallet_repository.dart';
-
-import 'package:bloc/bloc.dart';
-import 'package:executive/bloc/wallet_bloc/wallet_event.dart';
-import 'package:executive/bloc/wallet_bloc/wallet_state.dart';
-
 import '../../config/session_manager/session_manager.dart';
 import '../../model/wallet_model/wallet_model.dart';
 import '../../repository/wallet_repository/wallet_repository.dart';
@@ -23,7 +14,7 @@ class WalletBloc extends Bloc<WalletEvent, WalletState> {
   bool isFetching = false;
   List<TransactionModel> allTransactions = [];
 
-  WalletResult? lastResult; // ✅ STORE LAST DATA
+  WalletResult? lastResult; //  STORE LAST DATA
 
   WalletBloc({
     required this.repository,
@@ -48,7 +39,7 @@ class WalletBloc extends Bloc<WalletEvent, WalletState> {
       );
 
       allTransactions = res.result.transactions;
-      lastResult = res.result; // ✅ SAVE
+      lastResult = res.result; //  SAVE
 
       emit(WalletLoaded(
         result: res.result,
@@ -82,7 +73,7 @@ class WalletBloc extends Bloc<WalletEvent, WalletState> {
         allTransactions.addAll(res.result.transactions);
 
         emit(WalletLoaded(
-          result: currentState.result, // ✅ KEEP HEADER
+          result: currentState.result, //  KEEP HEADER
           transactions: allTransactions,
           currentPage: res.result.pagination.currentPage,
           lastPage: res.result.pagination.lastPage,
@@ -101,7 +92,7 @@ class WalletBloc extends Bloc<WalletEvent, WalletState> {
     try {
       final userId = await SessionManager.getUserId();
 
-      // ✅ DO NOT REMOVE UI
+      //  DO NOT REMOVE UI
       if (state is WalletLoaded) {
         final currentState = state as WalletLoaded;
 
@@ -120,13 +111,13 @@ class WalletBloc extends Bloc<WalletEvent, WalletState> {
 
       emit(WalletWithdrawSuccess(res.message));
 
-      /// ✅ REFRESH ONLY ON SUCCESS
+      ///  REFRESH ONLY ON SUCCESS
       add(FetchWallet());
 
     } catch (e) {
       emit(WalletWithdrawError(e.toString()));
 
-      // ✅ RESTORE OLD UI
+      //  RESTORE OLD UI
       if (lastResult != null) {
         emit(WalletLoaded(
           result: lastResult!,

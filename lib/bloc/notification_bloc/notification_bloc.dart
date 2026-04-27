@@ -17,7 +17,7 @@ class NotificationBloc extends Bloc<NotificationEvent, NotificationState> {
 
     on<ClearAllNotifications>((event, emit) {
 
-      /// 🔥 MARK ALL AS READ LOCALLY
+      ///  MARK ALL AS READ LOCALLY
       notifications = notifications.map((n) {
         return n.copyWith(readStatus: 1);
       }).toList();
@@ -30,7 +30,7 @@ class NotificationBloc extends Bloc<NotificationEvent, NotificationState> {
       ));
     });
 
-    /// 🔥 FETCH NOTIFICATIONS
+    ///  FETCH NOTIFICATIONS
     on<FetchNotifications>((event, emit) async {
       try {
         emit(NotificationLoading());
@@ -49,14 +49,14 @@ class NotificationBloc extends Bloc<NotificationEvent, NotificationState> {
       }
     });
 
-    /// 🔥 MARK SINGLE NOTIFICATION AS READ
+    ///  MARK SINGLE NOTIFICATION AS READ
     on<MarkNotificationRead>((event, emit) async {
       try {
 
-        /// 🔥 CALL READ API
+        ///  CALL READ API
         await repository.getNotifications(id: event.id);
 
-        /// 🔥 UPDATE LOCAL LIST (NO LOADER)
+        ///  UPDATE LOCAL LIST (NO LOADER)
         notifications = notifications.map((n) {
           if (n.id == event.id) {
             return n.copyWith(readStatus: 1);
@@ -64,7 +64,7 @@ class NotificationBloc extends Bloc<NotificationEvent, NotificationState> {
           return n;
         }).toList();
 
-        /// 🔥 UPDATE COUNT LOCALLY
+        ///  UPDATE COUNT LOCALLY
         unreadCount = notifications.where((e) => e.readStatus == 0).length;
 
         emit(NotificationLoaded(

@@ -11,9 +11,11 @@ import '../../network/dio_network/network_info.dart';
 import '../../repository/agent_repo/agent_repository.dart';
 import '../../repository/agent_repo/post_agent_repository.dart';
 import '../../repository/profile_repo/profile_repository.dart';
-import '../../repository/profile_repo/update_profole_repository.dart';
+import '../../repository/profile_repo/update_profile_repository.dart';
 import '../../repository/user_repo/user_post_repository.dart';
 import '../../repository/user_repo/user_repository.dart';
+import '../../repository/user_repo/user_sendotp_repository.dart';
+import '../../repository/user_repo/verify_userotp_repository.dart';
 import '../agent_screen/agent_screen.dart';
 import '../home_screen/app_drawer.dart';
 import '../home_screen/home_screen.dart';
@@ -60,7 +62,7 @@ class _BottomNavigationScreensState
     });
   }
 
-  /// 🔷 NAV ITEMS (Dynamic)
+  ///  NAV ITEMS (Dynamic)
   List<Map<String, dynamic>> getNavItems() {
     List<Map<String, dynamic>> items = [
       {"icon": Icons.home, "label": "Home"},
@@ -68,7 +70,7 @@ class _BottomNavigationScreensState
       {"icon": Icons.people, "label": "Users"},
     ];
 
-    /// ✅ Show Agents only if NOT Agent
+    ///  Show Agents only if NOT Agent
     if (userType != "Agent") {
       items.add({"icon": Icons.groups, "label": "Agents"});
     }
@@ -78,11 +80,11 @@ class _BottomNavigationScreensState
     return items;
   }
 
-  /// 🔷 PAGES (Dynamic with Bloc)
+  ///  PAGES (Dynamic with Bloc)
   List<Widget> getPages() {
     List<Widget> pages = [
 
-      /// ✅ PASS CORRECT KEY
+      ///  PASS CORRECT KEY
       HomeScreen(scaffoldKey: scaffoldKey),
 
 
@@ -104,6 +106,9 @@ class _BottomNavigationScreensState
             create: (_) => UserBloc(
               userRepository: UserRepository(dioClient),
               userPostRepository: UserPostRepository(dioClient),
+
+              sendOtpRepository: UserSendOtpRepository(dioClient),
+              verifyOtpRepository: UserOtpVerifyRepository(dioClient),
             ),
           ),
         ],
@@ -111,7 +116,7 @@ class _BottomNavigationScreensState
       ),
     ];
 
-    /// ✅ Agents only for Partner
+    ///  Agents only for Partner
     if (userType != "Agent") {
       pages.add(
         BlocProvider<AgentBloc>(
@@ -144,7 +149,7 @@ class _BottomNavigationScreensState
     final navItems = getNavItems();
     final pages = getPages();
 
-    /// 🔥 SAFETY (important)
+    ///  SAFETY (important)
     if (currentIndex >= pages.length) {
       currentIndex = 0;
     }
@@ -157,7 +162,7 @@ class _BottomNavigationScreensState
         // /// 🔷 BODY
         // body: pages[currentIndex],
       
-        key: scaffoldKey,   // 🔥 IMPORTANT
+        key: scaffoldKey,   //  IMPORTANT
         drawer: AppDrawer(rootContext: context),
         body: pages[currentIndex],
       
@@ -188,7 +193,7 @@ class _BottomNavigationScreensState
     );
   }
 
-  /// 🔷 NAV ITEM
+  ///  NAV ITEM
   Widget _navItem(IconData icon, String label, int index) {
     final isSelected = currentIndex == index;
 

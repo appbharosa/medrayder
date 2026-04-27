@@ -18,7 +18,7 @@ class UserPostRepository {
     required int bloodGroupId,
     required int coverageCategoryId,
 
-    // ✅ ADDRESS
+    //  ADDRESS
     required String hno,
     required String buildingNo,
     required String landmark,
@@ -42,7 +42,7 @@ class UserPostRepository {
       "blood_group": bloodGroupId,
       "coverage_category": coverageCategoryId,
 
-      // ✅ ADDRESS
+      //  ADDRESS
       "hno": hno,
       "building_no": buildingNo,
       "landmark": landmark,

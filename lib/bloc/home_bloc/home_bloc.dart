@@ -1,5 +1,4 @@
 import 'package:bloc/bloc.dart';
-
 import '../../config/session_manager/session_manager.dart';
 import '../../repository/home_repository/home_repository.dart';
 import 'home_event.dart';

@@ -9,17 +9,31 @@ class SubscriptionsRepository {
   SubscriptionsRepository(this.dioClient);
 
   Future<SubscriptionResponse> getSubscriptions({
-    int page = 1,
+    int? page,
+    int? perPage,
   }) async {
-    final response = await dioClient.get(
-      "${AppUrl.subscription}?page=$page&per_page=5",
-    );
+    // Build query parameters dynamically
+    final queryParams = <String, String>{};
 
-    /// 🔥 SAFE CHECK
+    if (page != null) queryParams['page'] = page.toString();
+    if (perPage != null) queryParams['per_page'] = perPage.toString();
+
+    // Build URL with query string
+    final queryString = queryParams.entries
+        .map((e) => '${e.key}=${e.value}')
+        .join('&');
+
+    final url = queryString.isEmpty
+        ? AppUrl.subscription
+        : "${AppUrl.subscription}?$queryString";
+
+    final response = await dioClient.get(url);
+
+    ///  SAFE CHECK
     if (response == null) {
       throw Exception("No response from server");
     }
-    /// 🔥 HANDLE STATUS SAFELY
+    ///  HANDLE STATUS SAFELY
     if (response["status"] == 200) {
       return SubscriptionResponse.fromJson(response);
     } else {

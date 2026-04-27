@@ -6,15 +6,9 @@ import '../../bloc/update_bloc/update_bloc.dart';
 import '../../bloc/update_bloc/update_event.dart';
 import '../../bloc/update_bloc/update_state.dart';
 import '../../config/routes/routes_name.dart';
-
-
-import 'package:executive/config/session_manager/session_manager.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_svg/flutter_svg.dart';
-
-import '../../config/routes/routes_name.dart';
 import '../../model/update_response/update_response.dart';
+
 
 
 class SplashScreen extends StatefulWidget {
@@ -29,6 +23,7 @@ class _SplashScreenState extends State<SplashScreen>
 
   late AnimationController _controller;
   late Animation<double> _animation;
+  bool _isDialogShowing = false;
 
   @override
   void initState() {
@@ -45,17 +40,14 @@ class _SplashScreenState extends State<SplashScreen>
 
     _controller.repeat(reverse: true);
 
-    /// 🔥 CALL UPDATE API (instead of direct login)
+    /// Check for updates
     context.read<UpdateBloc>().add(CheckUpdateEvent());
   }
 
-  /// ✅ LOGIN FLOW (same as your code)
   void _checkLogin() async {
-    final token = await SessionManager.getToken();
-
-    print("🔥 TOKEN IN SPLASH: $token"); // ADD THIS
-
     if (!mounted) return;
+
+    final token = await SessionManager.getToken();
 
     if (token != null && token.isNotEmpty) {
       Navigator.pushNamedAndRemoveUntil(
@@ -72,36 +64,152 @@ class _SplashScreenState extends State<SplashScreen>
     }
   }
 
-  /// 🔴 FORCE UPDATE DIALOG
-  void _showUpdateDialog(UpdateResult result) {
+  /// Show OPTIONAL update dialog (user can dismiss)
+  void _showOptionalUpdateDialog(UpdateResult result) {
+    if (_isDialogShowing) return;
+    _isDialogShowing = true;
+
     showDialog(
       context: context,
       barrierDismissible: false,
       builder: (context) {
         return AlertDialog(
-          title: const Text("Update Required"),
-          content: Text(result.message),
+          title: Row(
+            children: [
+              Icon(Icons.system_update, color: Colors.orange),
+              const SizedBox(width: 10),
+              const Text("Update Available"),
+            ],
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(result.message),
+              const SizedBox(height: 10),
+              Container(
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  color: Colors.grey[100],
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      "Current version: ${result.currentVersion}",
+                      style: const TextStyle(fontSize: 14),
+                    ),
+                    const SizedBox(height: 5),
+                    Text(
+                      "New version: ${result.yourVersion}",
+                      style: const TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.blue,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
           actions: [
             TextButton(
-              onPressed: () async {
-                const packageName = "com.medrayder.executive"; // 🔥 CHANGE THIS
-
-                final Uri url = Uri.parse(
-                  "https://play.google.com/store/apps/details?id=$packageName",
-                );
-
-                if (await canLaunchUrl(url)) {
-                  await launchUrl(
-                    url,
-                    mode: LaunchMode.externalApplication,
-                  );
-                } else {
-                  print("❌ Could not launch Play Store");
-                }
+              onPressed: () {
+                Navigator.of(context).pop();
+                _isDialogShowing = false;
+                // User dismissed, proceed to login
+                context.read<UpdateBloc>().add(UserDismissedUpdateEvent());
               },
-              child: const Text("Update"),
+              child: const Text("Later"),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+                _isDialogShowing = false;
+                // User wants to update
+                const packageName = "com.medrayder.executive";
+                final updateUrl = "https://play.google.com/store/apps/details?id=$packageName";
+                context.read<UpdateBloc>().add(UserClickedUpdateEvent(updateUrl));
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.blue,
+              ),
+              child: const Text("Update Now"),
             ),
           ],
+        );
+      },
+    );
+  }
+
+  /// Show FORCE update dialog (cannot dismiss)
+  void _showForceUpdateDialog(UpdateResult result) {
+    if (_isDialogShowing) return;
+    _isDialogShowing = true;
+
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) {
+        return WillPopScope(
+          onWillPop: () async => false, // Prevent back button
+          child: AlertDialog(
+            title: Row(
+              children: [
+                Icon(Icons.warning, color: Colors.red),
+                const SizedBox(width: 10),
+                const Text("Update Required"),
+              ],
+            ),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(result.message),
+                const SizedBox(height: 10),
+                Container(
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    color: Colors.red[50],
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        "Your version: ${result.yourVersion}",
+                        style: const TextStyle(fontSize: 14),
+                      ),
+                      const SizedBox(height: 5),
+                      Text(
+                        "Required version: ${result.currentVersion}",
+                        style: const TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.red,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+            actions: [
+              ElevatedButton(
+                onPressed: () {
+                  // User must update
+                  const packageName = "com.medrayder.executive";
+                  final updateUrl = "https://play.google.com/store/apps/details?id=$packageName";
+                  context.read<UpdateBloc>().add(UserClickedUpdateEvent(updateUrl));
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.red,
+                ),
+                child: const Text("Update Now"),
+              ),
+            ],
+          ),
         );
       },
     );
@@ -114,28 +222,37 @@ class _SplashScreenState extends State<SplashScreen>
   }
 
   @override
-  @override
   Widget build(BuildContext context) {
-
     return BlocListener<UpdateBloc, UpdateState>(
       listener: (context, state) {
-
-        /// 🔴 FORCE UPDATE
-        if (state is UpdateRequired) {
-          _showUpdateDialog(state.result);
+        /// FORCE UPDATE (must update)
+        if (state is ForceUpdateRequired) {
+          _showForceUpdateDialog(state.result);
         }
 
-        /// ✅ NO UPDATE → CHECK LOGIN
+        /// NEW VERSION AVAILABLE (optional)
+        else if (state is NewVersionAvailable) {
+          _showOptionalUpdateDialog(state.result);
+        }
+
+        /// NAVIGATE TO PLAY STORE
+        else if (state is NavigateToPlayStore) {
+          _launchPlayStore(state.updateUrl);
+        }
+
+        /// NO UPDATE NEEDED
         else if (state is UpdateNotRequired) {
           _checkLogin();
         }
 
-        /// ⚠️ ERROR → STILL ALLOW LOGIN
+        /// ERROR - still allow login
         else if (state is UpdateError) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(state.message)),
+          );
           _checkLogin();
         }
       },
-
       child: Scaffold(
         body: Center(
           child: AnimatedBuilder(
@@ -153,5 +270,17 @@ class _SplashScreenState extends State<SplashScreen>
         ),
       ),
     );
+  }
+
+  Future<void> _launchPlayStore(String url) async {
+    final Uri playStoreUri = Uri.parse(url);
+    if (await canLaunchUrl(playStoreUri)) {
+      await launchUrl(
+        playStoreUri,
+        mode: LaunchMode.externalApplication,
+      );
+    } else {
+      throw 'Could not launch $url';
+    }
   }
 }

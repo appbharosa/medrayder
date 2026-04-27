@@ -83,7 +83,7 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
         centerTitle: true,
         iconTheme: const IconThemeData(color: Colors.white),
 
-        /// 🔥 LEFT SIDE
+        ///  LEFT SIDE
         leading: widget.showBackButton
             ? IconButton(
           icon: const Icon(Icons.arrow_back),
@@ -100,7 +100,7 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
           },
         ),
 
-        /// 🔥 TITLE
+        ///  TITLE
         title: const Text(
           "Subscriptions",
           style: TextStyle(
@@ -110,7 +110,7 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
           ),
         ),
 
-        /// 🔥 RIGHT SIDE (ONLY FOR DRAWER MODE)
+        ///  RIGHT SIDE (ONLY FOR DRAWER MODE)
         actions: widget.showBackButton
             ? null
             : [

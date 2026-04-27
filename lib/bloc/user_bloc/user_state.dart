@@ -23,7 +23,7 @@ class UserError extends UserState {
   UserError(this.message);
 }
 
-/// 🔥 ACTION STATES (DO NOT BREAK UI)
+///  ACTION STATES (DO NOT BREAK UI)
 abstract class UserActionState extends UserState {}
 
 class UserAdding extends UserActionState {}
@@ -33,4 +33,13 @@ class UserAdded extends UserActionState {}
 class UserAddError extends UserActionState {
   final String message;
   UserAddError(this.message);
+}
+class UserOtpSending extends UserState {}
+class UserOtpSent extends UserState {}
+class UserOtpVerifying extends UserState {}
+class UserOtpVerified extends UserState {}
+
+class UserOtpError extends UserState {
+  final String message;
+  UserOtpError(this.message);
 }

@@ -1,13 +1,9 @@
 import 'package:bloc/bloc.dart';
-
 import '../../model/agent_model/agent_model.dart';
 import '../../repository/agent_repo/agent_repository.dart';
 import '../../repository/agent_repo/post_agent_repository.dart';
 import 'agent_event.dart';
 import 'agent_state.dart';
-
-import 'dart:io';
-import 'package:bloc/bloc.dart';
 import 'package:dio/dio.dart';
 
 

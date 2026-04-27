@@ -13,7 +13,7 @@ class DioClient {
   final Dio dio;
   final NetworkInfo networkInfo;
   final TokenProvider tokenProvider;
-  static bool isLoggingOut = false; // ✅ ADD THIS
+  static bool isLoggingOut = false; //
 
   DioClient({
     required this.dio,
@@ -35,7 +35,7 @@ class DioClient {
       InterceptorsWrapper(
         onRequest: (options, handler) async {
 
-          /// 🔥 INTERNET CHECK
+
           if (!await networkInfo.isConnected) {
             return handler.reject(
               DioException(
@@ -45,7 +45,7 @@ class DioClient {
             );
           }
 
-          /// 🔥 TOKEN ADD
+          ///  TOKEN ADD
           if (!_isPublicApi(options.path)) {
             final token = await tokenProvider();
 
@@ -54,7 +54,7 @@ class DioClient {
             }
           }
 
-          /// 🔥 BODY FIX
+          ///  BODY FIX
           if (options.data != null && options.data is Map) {
             options.data = Map<String, dynamic>.from(options.data);
           }
@@ -62,28 +62,23 @@ class DioClient {
           handler.next(options);
         },
 
-        /// 🔥 ERROR HANDLING
+        ///  ERROR HANDLING
         onError: (error, handler) async {
           final statusCode = error.response?.statusCode;
           final data = error.response?.data;
           final path = error.requestOptions.path;
 
-          print("🚨 ERROR STATUS: $statusCode");
-          print("🚨 ERROR PATH: $path");
-          print("🚨 ERROR DATA: $data");
 
-          /// ================= ✅ IGNORE PUBLIC APIs =================
           if (_isPublicApi(path)) {
             return handler.next(error);
           }
 
-          /// ================= ✅ CHECK TOKEN EXPIRED ONLY =================
           bool isTokenExpired = false;
 
           if (statusCode == 401) {
             final message = data?.toString().toLowerCase() ?? "";
 
-            /// 🔥 ONLY logout for these cases
+
             if (message.contains("token expired") ||
                 message.contains("invalid token") ||
                 message.contains("unauthorized")||
@@ -93,7 +88,7 @@ class DioClient {
             }
           }
 
-          /// ================= ✅ LOGOUT ONLY IF TOKEN EXPIRED =================
+
           if (isTokenExpired && !isLoggingOut) {
             isLoggingOut = true;
 
@@ -111,7 +106,7 @@ class DioClient {
             return;
           }
 
-          /// ❗ OTHERWISE DO NOT LOGOUT
+
           handler.next(error);
         },
       ),
@@ -159,16 +154,9 @@ class DioClient {
         dynamic data,
       }) async {
     try {
-      // 🔹 DEBUG LOGS BEFORE REQUEST
-      print("========== PUT REQUEST ==========");
-      print("FULL URL: ${dio.options.baseUrl}$url");
-      print("HEADERS: ${dio.options.headers}");
-      print("BODY: $data");
+
       final response = await dio.put(url, data: data);
-      // 🔹 DEBUG LOGS AFTER RESPONSE
-      print("========== RESPONSE ==========");
-      print("STATUS: ${response.statusCode}");
-      print("DATA: ${response.data}");
+
       return _handleResponse(response);
     } on DioException catch (e) {
       throw _handleDioError(e);
@@ -223,7 +211,7 @@ class DioClient {
       case DioExceptionType.badCertificate:
         return ApiException("SSL Certificate Error");
       case DioExceptionType.badResponse:
-      // ✅ FIX: Safely check message
+      //  FIX: Safely check message
         final data = e.response?.data;
         String message = "Server Error";
 

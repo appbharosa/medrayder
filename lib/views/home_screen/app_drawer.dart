@@ -52,10 +52,9 @@ class _AppDrawerState extends State<AppDrawer> {
           color: Colors.blue.shade700,
         ),
 
-        /// 🔹 AVATAR SIZE (gives spacing automatically)
+
         currentAccountPictureSize: const Size(60, 60),
 
-        /// 🔹 USER NAME (WITH SPACE FROM AVATAR)
         accountName: Padding(
           padding: const EdgeInsets.only(top: 8),
           child: Text(
@@ -68,7 +67,7 @@ class _AppDrawerState extends State<AppDrawer> {
           ),
         ),
 
-        /// 🔹 REFERRAL + SHARE
+        ///  REFERRAL + SHARE
         accountEmail: Padding(
           padding: const EdgeInsets.only(top: 4),
           child: Column(
@@ -91,12 +90,13 @@ class _AppDrawerState extends State<AppDrawer> {
                   GestureDetector(
                     onTap: () {
                       final referralLink =
-                     //     "https://medconnect.org.in/bharosa/registration?referral_id=$uniqueCode";
                      "https://medrayder.in/bharosa/registration/medrayder_partners?referral_id=$uniqueCode";
 
-
-                      Share.share(
-                        "Join using my referral link:\n$referralLink",
+                      SharePlus.instance.share(
+                        ShareParams(
+                          text: "Join using my referral link:\n$referralLink",
+                          subject: "Referral Link",
+                        ),
                       );
                     },
                     child: const Padding(
@@ -124,7 +124,7 @@ class _AppDrawerState extends State<AppDrawer> {
 
         ),
 
-        /// 🔹 PROFILE CIRCLE
+        ///  PROFILE CIRCLE
         currentAccountPicture: CircleAvatar(
           backgroundColor: Colors.white,
           child: Text(
@@ -175,7 +175,7 @@ class _AppDrawerState extends State<AppDrawer> {
             },
           ),
 
-          /// ✅ LOGOUT (MOVED HERE)
+          ///  LOGOUT (MOVED HERE)
           _drawerItem(
             icon: Icons.logout,
             title: "Logout",

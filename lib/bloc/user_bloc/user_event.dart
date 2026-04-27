@@ -43,3 +43,15 @@ class AddUser extends UserEvent {
     required this.isDefault,
   });
 }
+
+class SendUserOtp extends UserEvent {
+  final String email;
+  SendUserOtp(this.email);
+}
+
+class VerifyUserOtp extends UserEvent {
+  final String email;
+  final String otp;
+
+  VerifyUserOtp({required this.email, required this.otp});
+}

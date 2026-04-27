@@ -67,7 +67,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   onPressed: state is LoginLoading
                       ? null
                       : () {
-                    FocusScope.of(context).unfocus(); // 🔥 dismiss keyboard
+                    FocusScope.of(context).unfocus(); //  dismiss keyboard
                     if (_formKey.currentState!.validate()) {
                       context.read<LoginBloc>().add(
                         LoginButtonPressed(
@@ -88,10 +88,10 @@ class _LoginScreenState extends State<LoginScreen> {
 
             /// ================= BODY =================
             body: GestureDetector(
-              onTap: () => FocusScope.of(context).unfocus(), // 🔥 dismiss on tap
+              onTap: () => FocusScope.of(context).unfocus(), //  dismiss on tap
               child: SingleChildScrollView(
                 keyboardDismissBehavior:
-                ScrollViewKeyboardDismissBehavior.onDrag, // 🔥 iOS fix
+                ScrollViewKeyboardDismissBehavior.onDrag, //  iOS fix
                 child: Padding(
                   padding: const EdgeInsets.all(20),
                   child: Form(

@@ -5,10 +5,15 @@ import 'package:executive/bloc/user_bloc/user_state.dart';
 import '../../model/user_model/user_model.dart';
 import '../../repository/user_repo/user_post_repository.dart';
 import '../../repository/user_repo/user_repository.dart';
+import '../../repository/user_repo/user_sendotp_repository.dart';
+import '../../repository/user_repo/verify_userotp_repository.dart';
 
 class UserBloc extends Bloc<UserEvent, UserState> {
   final UserRepository userRepository;
   final UserPostRepository userPostRepository;
+
+  final UserSendOtpRepository sendOtpRepository;
+  final UserOtpVerifyRepository verifyOtpRepository;
 
   List<User> users = [];
   int currentPage = 1;
@@ -17,6 +22,8 @@ class UserBloc extends Bloc<UserEvent, UserState> {
   UserBloc({
     required this.userRepository,
     required this.userPostRepository,
+    required this.sendOtpRepository,
+    required this.verifyOtpRepository,
   }) : super(UserInitial()) {
 
     /// ================= FETCH USERS =================
@@ -51,7 +58,7 @@ class UserBloc extends Bloc<UserEvent, UserState> {
     /// ================= ADD USER =================
     on<AddUser>((event, emit) async {
       try {
-        emit(UserAdding()); // 🔥 LOADER START
+        emit(UserAdding());
 
         await userPostRepository.postUser(
           userId: event.userId,
@@ -64,7 +71,7 @@ class UserBloc extends Bloc<UserEvent, UserState> {
           coverageCategoryId: event.coverageCategoryId,
           image: event.image,
 
-          // ✅ ADDRESS FROM EVENT
+          // ADDRESS
           hno: event.hno,
           buildingNo: event.buildingNo,
           landmark: event.landmark,
@@ -76,11 +83,48 @@ class UserBloc extends Bloc<UserEvent, UserState> {
           isDefault: event.isDefault,
         );
 
-        emit(UserAdded()); // ✅ SUCCESS
+        emit(UserAdded());
 
       } catch (e) {
-        emit(UserAddError(e.toString())); // ❌ ERROR
+        emit(UserAddError(e.toString()));
       }
     });
+
+    /// ================= OTP EVENTS =================
+    on<SendUserOtp>(_sendOtp);
+    on<VerifyUserOtp>(_verifyOtp);
+  }
+
+  /// 🔥 SEND OTP
+  Future<void> _sendOtp(
+      SendUserOtp event, Emitter<UserState> emit) async {
+    try {
+      emit(UserOtpSending());
+
+      await sendOtpRepository.sendOtp(
+        email: event.email,
+      );
+
+      emit(UserOtpSent());
+    } catch (e) {
+      emit(UserOtpError(e.toString()));
+    }
+  }
+
+  /// 🔥 VERIFY OTP
+  Future<void> _verifyOtp(
+      VerifyUserOtp event, Emitter<UserState> emit) async {
+    try {
+      emit(UserOtpVerifying());
+
+      await verifyOtpRepository.verifyOtp(
+        email: event.email,
+        otp: event.otp,
+      );
+
+      emit(UserOtpVerified());
+    } catch (e) {
+      emit(UserOtpError(e.toString()));
+    }
   }
 }

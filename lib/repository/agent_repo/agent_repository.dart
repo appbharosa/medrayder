@@ -10,22 +10,29 @@ class AgentRepository {
 
   Future<AgentPagination> getAgents({
     int page = 1,
-    int perPage = 10,
+    int? perPage,
     String? search,
   }) async {
-    final query = {
-      "page": page.toString(),
-      "per_page": perPage.toString(),
-      if (search != null) "search": search,
-    };
 
-    final response = await dioClient.get(
-      AppUrl.getAgents,
-      query: query,
-    );
+    /// ✅ BUILD URL DYNAMICALLY
+    final url =
+        "${AppUrl.getAgents}?page=$page"
+        "${perPage != null ? "&per_page=$perPage" : ""}"
+        "${(search != null && search.isNotEmpty) ? "&search=$search" : ""}";
+
+    final response = await dioClient.get(url);
 
     if (response["status"] == 200) {
-      return AgentPagination.fromJson(response["result"][0]);
+
+      /// ⚠️ SAFE PARSING
+      final result = response["result"];
+
+      if (result is List && result.isNotEmpty) {
+        return AgentPagination.fromJson(result[0]);
+      } else {
+        throw Exception("Invalid response format");
+      }
+
     } else {
       throw Exception(response["message"]);
     }

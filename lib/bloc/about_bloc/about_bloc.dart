@@ -1,5 +1,4 @@
 import 'package:bloc/bloc.dart';
-
 import '../../repository/about_repo/about_repository.dart';
 import 'about_event.dart';
 import 'about_state.dart';

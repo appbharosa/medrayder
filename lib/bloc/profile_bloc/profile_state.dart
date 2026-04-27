@@ -11,7 +11,7 @@ class ProfileUpdating extends ProfileState {}
 class ProfileLoaded extends ProfileState {
   final ProfileModel profile;
   final bool isEditable;
-  final String? message; // ✅ success message
+  final String? message;
 
   ProfileLoaded(
       this.profile, {

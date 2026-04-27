@@ -1,9 +1,8 @@
 import 'package:bloc/bloc.dart';
 import 'package:executive/bloc/profile_bloc/profile_event.dart';
 import 'package:executive/bloc/profile_bloc/profile_state.dart';
-
 import '../../repository/profile_repo/profile_repository.dart';
-import '../../repository/profile_repo/update_profole_repository.dart';
+import '../../repository/profile_repo/update_profile_repository.dart';
 
 class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
   final ProfileRepository repository;
@@ -17,7 +16,6 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
     on<UpdateProfileEvent>(_updateProfile);
   }
 
-  /// ================= GET PROFILE =================
   Future<void> _getProfile(
       GetProfileEvent event,
       Emitter<ProfileState> emit,
@@ -62,15 +60,12 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
         dob: event.dob,
         image: event.image,
       );
-
-      /// 🔥 reload profile
       final updatedData = await repository.getProfile();
 
-      /// ✅ Emit ONLY ProfileLoaded
       emit(ProfileLoaded(
         updatedData,
         isEditable: false,
-        message: response.message, // 👈 pass success msg
+        message: response.message,
       ));
 
     } catch (e) {

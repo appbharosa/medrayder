@@ -93,7 +93,7 @@ class _AgentScreenState extends State<AgentScreen> {
         centerTitle: true,
         iconTheme: const IconThemeData(color: Colors.white),
 
-        /// 🔥 LEFT SIDE
+        ///  LEFT SIDE
         leading: widget.showBackButton
             ? IconButton(
           icon: const Icon(Icons.arrow_back),
@@ -104,13 +104,13 @@ class _AgentScreenState extends State<AgentScreen> {
             return IconButton(
               icon: const Icon(Icons.menu),
               onPressed: () {
-                widget.scaffoldKey?.currentState?.openDrawer();
+                widget.scaffoldKey.currentState?.openDrawer();
               },
             );
           },
         ),
 
-        /// 🔥 TITLE
+        ///  TITLE
         title: const Text(
           "Agents",
           style: TextStyle(
@@ -120,7 +120,7 @@ class _AgentScreenState extends State<AgentScreen> {
           ),
         ),
 
-        /// 🔥 RIGHT SIDE (ONLY FOR DRAWER MODE)
+        ///  RIGHT SIDE (ONLY FOR DRAWER MODE)
         actions: widget.showBackButton
             ? null
             : [
@@ -236,11 +236,11 @@ class _AgentScreenState extends State<AgentScreen> {
                                   SizedBox(height: 4,),
                                   Text(agent.mobile),
                                   SizedBox(height: 4,),
-                                  Text('Subscriptions :${agent.subscriptionData?.totalSubscription ?? 0}'),
+                                  Text('Subscriptions : ${agent.subscriptionData?.totalSubscription ?? 0}'),
                                   SizedBox(height: 4,),
-                                  Text('single Subscriptions :${agent.subscriptionData?.totalFamilySubscription ?? 0}'),
+                                  Text('single Subscriptions : ${agent.subscriptionData?.totalSingleSubscription ?? 0}'),
                                   SizedBox(height: 4,),
-                                  Text('Family Subscriptions :${agent.subscriptionData?.totalFamilySubscription ?? 0}'),
+                                  Text('Family Subscriptions : ${agent.subscriptionData?.totalFamilySubscription ?? 0}'),
                                                                  ],
                               ),
                             ),
@@ -581,8 +581,8 @@ Widget _inputMobile(String label, TextEditingController c,
       isMobile ? TextInputType.number : TextInputType.text,
       inputFormatters: isMobile
           ? [
-        FilteringTextInputFormatter.digitsOnly, // ✅ only numbers
-        LengthLimitingTextInputFormatter(10),   // ✅ max 10 digits
+        FilteringTextInputFormatter.digitsOnly,
+        LengthLimitingTextInputFormatter(10),
       ]
           : [],
       decoration: InputDecoration(

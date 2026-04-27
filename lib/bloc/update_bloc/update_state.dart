@@ -8,14 +8,26 @@ class UpdateLoading extends UpdateState {}
 
 class UpdateNotRequired extends UpdateState {}
 
-class UpdateRequired extends UpdateState {
+class ForceUpdateRequired extends UpdateState {
   final UpdateResult result;
 
-  UpdateRequired(this.result);
+  ForceUpdateRequired(this.result);
+}
+
+class NewVersionAvailable extends UpdateState {
+  final UpdateResult result;
+
+  NewVersionAvailable(this.result);
 }
 
 class UpdateError extends UpdateState {
   final String message;
 
   UpdateError(this.message);
+}
+
+class NavigateToPlayStore extends UpdateState {
+  final String updateUrl;
+
+  NavigateToPlayStore(this.updateUrl);
 }

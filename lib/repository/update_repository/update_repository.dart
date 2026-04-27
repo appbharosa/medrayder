@@ -13,8 +13,9 @@ class UpdateRepository {
     PackageInfo packageInfo = await PackageInfo.fromPlatform();
     String version = packageInfo.version;
 
+    // 👈 Fix the URL construction
     final response = await dioClient.get(
-      "${AppUrl.updateApi}=$version",
+      "${AppUrl.updateApi}?version=$version", // Changed = to ?version=
     );
 
     if (response == null) {

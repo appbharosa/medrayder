@@ -11,9 +11,9 @@ class WalletResponse {
 
   factory WalletResponse.fromJson(Map<String, dynamic> json) {
     return WalletResponse(
-      status: json["status"],
-      message: json["message"],
-      result: WalletResult.fromJson(json["result"]),
+      status: json["status"] ?? 0,
+      message: json["message"] ?? "",
+      result: WalletResult.fromJson(json["result"] ?? {}),
     );
   }
 }
@@ -23,22 +23,26 @@ class WalletResult {
   final AccountSummary summary;
   final List<TransactionModel> transactions;
   final Pagination pagination;
+  final StatementPeriod statementPeriod;
 
   WalletResult({
     required this.userInfo,
     required this.summary,
     required this.transactions,
     required this.pagination,
+    required this.statementPeriod,
   });
 
   factory WalletResult.fromJson(Map<String, dynamic> json) {
     return WalletResult(
-      userInfo: UserInfo.fromJson(json["user_info"]),
-      summary: AccountSummary.fromJson(json["account_summary"]),
-      transactions: (json["transactions"] as List)
+      userInfo: UserInfo.fromJson(json["user_info"] ?? {}),
+      summary: AccountSummary.fromJson(json["account_summary"] ?? {}),
+      transactions: (json["transactions"] as List? ?? [])
           .map((e) => TransactionModel.fromJson(e))
           .toList(),
-      pagination: Pagination.fromJson(json["pagination"]),
+      pagination: Pagination.fromJson(json["pagination"] ?? {}),
+      statementPeriod:
+      StatementPeriod.fromJson(json["statement_period"] ?? {}),
     );
   }
 }
@@ -47,11 +51,13 @@ class UserInfo {
   final String name;
   final String email;
   final String mobile;
+  final String accountOpened;
 
   UserInfo({
     required this.name,
     required this.email,
     required this.mobile,
+    required this.accountOpened,
   });
 
   factory UserInfo.fromJson(Map<String, dynamic> json) {
@@ -59,6 +65,7 @@ class UserInfo {
       name: json["name"] ?? "",
       email: json["email"] ?? "",
       mobile: json["mobile"] ?? "",
+      accountOpened: json["account_opened"] ?? "",
     );
   }
 }
@@ -67,18 +74,37 @@ class AccountSummary {
   final int currentBalance;
   final int totalCredit;
   final int totalDebit;
+  final int netBalance;
+  final int totalTransactions;
+  final int completedTransactions;
+  final int pendingTransactions;
 
   AccountSummary({
     required this.currentBalance,
     required this.totalCredit,
     required this.totalDebit,
+    required this.netBalance,
+    required this.totalTransactions,
+    required this.completedTransactions,
+    required this.pendingTransactions,
   });
 
   factory AccountSummary.fromJson(Map<String, dynamic> json) {
     return AccountSummary(
-      currentBalance: json["current_balance"] ?? 0,
-      totalCredit: json["total_credit"] ?? 0,
-      totalDebit: json["total_debit"] ?? 0,
+      currentBalance:
+      int.tryParse(json["current_balance"].toString()) ?? 0,
+      totalCredit:
+      int.tryParse(json["total_credit"].toString()) ?? 0,
+      totalDebit:
+      int.tryParse(json["total_debit"].toString()) ?? 0,
+      netBalance:
+      int.tryParse(json["net_balance"].toString()) ?? 0,
+      totalTransactions:
+      int.tryParse(json["total_transactions"].toString()) ?? 0,
+      completedTransactions:
+      int.tryParse(json["completed_transactions"].toString()) ?? 0,
+      pendingTransactions:
+      int.tryParse(json["pending_transactions"].toString()) ?? 0,
     );
   }
 }
@@ -105,8 +131,8 @@ class TransactionModel {
       date: json["date"] ?? "",
       time: json["time"] ?? "",
       transactionId: json["transaction_id"] ?? "",
-      debit: json["debit"] ?? "",
-      credit: json["credit"] ?? "",
+      debit: json["debit"]?.toString() ?? "",
+      credit: json["credit"]?.toString() ?? "",
       status: json["status"] ?? "",
     );
   }
@@ -123,8 +149,25 @@ class Pagination {
 
   factory Pagination.fromJson(Map<String, dynamic> json) {
     return Pagination(
-      currentPage: json["current_page"],
-      lastPage: json["last_page"],
+      currentPage: json["current_page"] ?? 0,
+      lastPage: json["last_page"] ?? 0,
+    );
+  }
+}
+
+class StatementPeriod {
+  final String startDate;
+  final String endDate;
+
+  StatementPeriod({
+    required this.startDate,
+    required this.endDate,
+  });
+
+  factory StatementPeriod.fromJson(Map<String, dynamic> json) {
+    return StatementPeriod(
+      startDate: json["start_date"] ?? "",
+      endDate: json["end_date"] ?? "",
     );
   }
 }

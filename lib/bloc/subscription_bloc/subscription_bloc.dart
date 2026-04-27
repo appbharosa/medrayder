@@ -22,19 +22,14 @@ class SubscriptionBloc
     /// ================= FETCH =================
     on<FetchSubscriptions>((event, emit) async {
       try {
-        /// 🔥 STOP if already fetching OR reached last page
         if (isFetching || currentPage > lastPage) return;
-
         isFetching = true;
-
-        /// 🔥 RESET CASE
         if (event.reset) {
           currentPage = 1;
           lastPage = 1;
           subscriptions.clear();
         }
 
-        /// 🔥 SHOW LOADER ONLY FIRST TIME
         if (subscriptions.isEmpty) {
           emit(SubscriptionLoading());
         }
@@ -43,21 +38,17 @@ class SubscriptionBloc
           page: currentPage,
         );
 
-        /// 🔥 HANDLE EMPTY RESPONSE SAFELY
         if (response.data.isEmpty && subscriptions.isEmpty) {
           emit(SubscriptionError("No Data Found"));
           isFetching = false;
           return;
         }
 
-        /// 🔥 APPEND DATA
         subscriptions.addAll(response.data);
 
-        /// 🔥 UPDATE PAGINATION
         currentPage = response.currentPage + 1;
         lastPage = response.lastPage;
 
-        /// 🔥 EMIT SUCCESS
         emit(SubscriptionLoaded(
           list: List.from(subscriptions),
           currentPage: currentPage,
@@ -67,7 +58,6 @@ class SubscriptionBloc
       } catch (e) {
         emit(SubscriptionError(e.toString()));
       } finally {
-        /// 🔥 ALWAYS RESET FLAG
         isFetching = false;
       }
     });

@@ -6,12 +6,8 @@ import '../../bloc/otp_bloc/otp_event.dart';
 import '../../bloc/otp_bloc/otp_state.dart';
 import '../../config/routes/routes_name.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-
-
-import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_svg/flutter_svg.dart';
+
 
 class OtpVerifyScreen extends StatefulWidget {
   final int userId;
@@ -61,6 +57,7 @@ class _OtpVerifyScreenState extends State<OtpVerifyScreen> {
   @override
   Widget build(BuildContext context) {
     return SafeArea(
+      top: false,
       bottom: true,
       child: Scaffold(
         backgroundColor: Colors.white,
@@ -134,7 +131,7 @@ class _OtpVerifyScreenState extends State<OtpVerifyScreen> {
 
                         const SizedBox(height: 30),
 
-                        /// ✅ FIXED OTP FIELDS
+                        ///  FIXED OTP FIELDS
                         // Row(
                         //   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         //   children: List.generate(6, (index) {

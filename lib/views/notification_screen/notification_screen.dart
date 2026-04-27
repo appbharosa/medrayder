@@ -19,10 +19,10 @@ class _NotificationScreenState extends State<NotificationScreen> {
   void initState() {
     super.initState();
 
-    /// 🔥 CLEAR COUNT WHEN OPEN
+    ///  CLEAR COUNT WHEN OPEN
     context.read<NotificationBloc>().add(ClearAllNotifications());
 
-    /// 🔥 OPTIONAL: REFRESH LIST FROM API
+    ///  OPTIONAL: REFRESH LIST FROM API
     context.read<NotificationBloc>().add(FetchNotifications());
   }
 

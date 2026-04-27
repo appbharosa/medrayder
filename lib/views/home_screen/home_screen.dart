@@ -1,4 +1,5 @@
 import 'package:executive/bloc/home_bloc/home_event.dart';
+import 'package:executive/bloc/notification_bloc/notification_event.dart';
 import 'package:executive/config/colors/app_colors.dart';
 import 'package:executive/config/routes/routes_name.dart';
 import 'package:flutter/material.dart';
@@ -26,22 +27,50 @@ class HomeScreen extends StatefulWidget {
   State<HomeScreen> createState() => _HomeScreenState();
 }
 
-class _HomeScreenState extends State<HomeScreen> {
+class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
   int currentIndex = 0;
-
   String name = "";
-  String type ="";
+  String type = "";
 
-
-  @override void initState() {
-    super.initState();
-    _loadUserData();
-  }
   @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+    _loadUserData();
+    _refreshData();
+  }
 
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    super.didChangeAppLifecycleState(state);
+    // Refresh when app comes back to foreground
+    if (state == AppLifecycleState.resumed) {
+      _refreshData();
+    }
+  }
+
+  @override
+  void didUpdateWidget(covariant HomeScreen oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // Refresh when widget updates
+    _refreshData();
+  }
+
+  void _refreshData() {
+    // Refresh home data
     context.read<HomeBloc>().add(FetchHomeData());
+
+    // Refresh notification count
+    context.read<NotificationBloc>().add(FetchNotifications());
+
+    // Reload user data from session
+    _loadUserData();
   }
 
   Future<void> openWhatsApp(String phone) async {
@@ -50,9 +79,7 @@ class _HomeScreenState extends State<HomeScreen> {
     if (await canLaunchUrl(url)) {
       await launchUrl(url);
     } else {
-      // 👉 Redirect to Play Store
-      final playStore = Uri.parse(
-          "https://wa.me/919010492345");
+      final playStore = Uri.parse("https://wa.me/919010492345");
       await launchUrl(playStore);
     }
   }
@@ -63,7 +90,6 @@ class _HomeScreenState extends State<HomeScreen> {
     if (await canLaunchUrl(url)) {
       await launchUrl(url);
     } else {
-      // 👉 Optional fallback
       throw "Call not supported";
     }
   }
@@ -75,14 +101,14 @@ class _HomeScreenState extends State<HomeScreen> {
     setState(() {
       name = userName ?? "";
       type = userType ?? "";
+    });
+  }
 
-    }); }
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-    backgroundColor: AppColors.whiteColor,
-     drawer: AppDrawer(rootContext: context),
-
+      backgroundColor: AppColors.whiteColor,
+      drawer: AppDrawer(rootContext: context),
 
       /// ================= APP BAR =================
       appBar: AppBar(
@@ -118,12 +144,12 @@ class _HomeScreenState extends State<HomeScreen> {
                 children: [
                   IconButton(
                     icon: const Icon(Icons.notifications, color: Colors.white),
-                    onPressed: () {
-                      Navigator.pushNamed(context, RoutesName.notificationScreen);
+                    onPressed: () async {
+                      await Navigator.pushNamed(context, RoutesName.notificationScreen);
+                      // Refresh notification count when coming back
+                      context.read<NotificationBloc>().add(FetchNotifications());
                     },
                   ),
-
-
                   if (unread > 0)
                     Positioned(
                       right: 8,
@@ -152,7 +178,7 @@ class _HomeScreenState extends State<HomeScreen> {
             },
           ),
 
-          /// 🔥 PROFILE IMAGE FROM API
+          /// PROFILE IMAGE FROM API
           Padding(
             padding: const EdgeInsets.only(right: 12),
             child: BlocBuilder<HomeBloc, HomeState>(
@@ -183,10 +209,7 @@ class _HomeScreenState extends State<HomeScreen> {
         foregroundColor: Colors.white,
         spacing: 10,
         spaceBetweenChildren: 10,
-
         children: [
-
-          //  WhatsApp
           SpeedDialChild(
             child: Padding(
               padding: const EdgeInsets.all(6),
@@ -195,14 +218,12 @@ class _HomeScreenState extends State<HomeScreen> {
                 fit: BoxFit.contain,
               ),
             ),
-            backgroundColor: Colors.white, // better for image visibility
+            backgroundColor: Colors.white,
             label: "WhatsApp",
             onTap: () {
-              openWhatsApp(""); // your number
+              openWhatsApp("");
             },
           ),
-
-          //  Call
           SpeedDialChild(
             child: const Icon(Icons.call, color: Colors.white),
             backgroundColor: Colors.blue,
@@ -217,7 +238,6 @@ class _HomeScreenState extends State<HomeScreen> {
       /// ================= BODY =================
       body: BlocBuilder<HomeBloc, HomeState>(
         builder: (context, state) {
-
           if (state is HomeLoading) {
             return const Center(child: CircularProgressIndicator());
           }
@@ -227,136 +247,140 @@ class _HomeScreenState extends State<HomeScreen> {
           }
 
           if (state is HomeLoaded) {
-
             final data = state.data;
 
+            return RefreshIndicator(
+              onRefresh: () async {
+                // Pull to refresh functionality
+                _refreshData();
+                await Future.delayed(const Duration(seconds: 1));
+              },
+              child: SingleChildScrollView(
+                physics: const AlwaysScrollableScrollPhysics(),
+                child: Column(
+                  children: [
+                    const SizedBox(height: 20),
 
-
-            return SingleChildScrollView(
-              child: Column(
-                children: [
-
-                  const SizedBox(height: 20),
-
-                  /// 🔷 HEADER
-                  Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: Container(
-                      width: double.infinity,
-                      padding: const EdgeInsets.all(16),
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          colors: [
-                            Colors.blue.shade900,
-                            Colors.blue.shade500,
-                          ],
-                        ),
-                        borderRadius: BorderRadius.circular(25),
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-
-                          Text(
-                            "Welcome, ${data.name}",
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-
-                          const SizedBox(height: 20),
-
-                          GridView.count(
-                            crossAxisCount: 2,
-                            shrinkWrap: true,
-                            physics: const NeverScrollableScrollPhysics(),
-                            crossAxisSpacing: 10,
-                            mainAxisSpacing: 10,
-                            childAspectRatio: 1.8,
-                            children: [
-
-                              _buildStatCard(
-                                "Total Subscriptions",
-                                data.totalSubscriptions.toString(),
-                                Colors.blue,
-                                  onTap: () {
-                                    Navigator.pushNamed(context, RoutesName.subscriptionScreen);
-                                  }
-                              ),
-
-                              _buildStatCard(
-                                "Monthly Earnings",
-                                data.monthlyEarnings.toString(),
-                                Colors.blue.shade700,
-                              ),
-
-                              _buildStatCard(
-                                "Users",
-                                data.users.toString(),
-                                Colors.orange,
-                                  onTap: () {
-                                    Navigator.pushNamed(context, RoutesName.userScreen);
-
-                                  }
-                              ),
-
-                              if (type != "Agent")
-                                _buildStatCard(
-                                  "Agents",
-                                  data.agents.toString(),
-                                  Colors.blue.shade600,
-                                    onTap: () {
-                                      Navigator.pushNamed(context, RoutesName.agentScreen);
-
-                                    }
-                                ),
-
-                              _buildStatCard(
-                                "Tutorials",
-                                data.tutorials.toString(),
-                                Colors.green,
-                                  onTap: () {
-                                    Navigator.pushNamed(context, RoutesName.tutorialScreen);
-
-                                  }
-                              ),
-
-                              _buildStatCard(
-                                "Wallet Balance",
-                                data.walletBalance.toString(),
-                                Colors.deepOrange,
-                                  onTap: () {
-                                    Navigator.pushNamed(context, RoutesName.walletScreen);
-
-                                  }
-                              ),
+                    /// 🔷 HEADER
+                    Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            colors: [
+                              Colors.blue.shade900,
+                              Colors.blue.shade500,
                             ],
                           ),
-                        ],
+                          borderRadius: BorderRadius.circular(25),
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              "Welcome, ${data.name}",
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            const SizedBox(height: 20),
+
+                            GridView.count(
+                              crossAxisCount: 2,
+                              shrinkWrap: true,
+                              physics: const NeverScrollableScrollPhysics(),
+                              crossAxisSpacing: 10,
+                              mainAxisSpacing: 10,
+                              childAspectRatio: 1.8,
+                              children: [
+                                _buildStatCard(
+                                  "Total Subscriptions",
+                                  data.totalSubscriptions.toString(),
+                                  Colors.blue,
+                                  onTap: () async {
+                                    await Navigator.pushNamed(context, RoutesName.subscriptionScreen);
+                                    _refreshData(); // Refresh when coming back
+                                  },
+                                ),
+                                _buildStatCard(
+                                  "Monthly Earnings",
+                                  data.monthlyEarnings.toString(),
+                                  Colors.blue.shade700,
+                                ),
+                                _buildStatCard(
+                                  "Users",
+                                  data.users.toString(),
+                                  Colors.orange,
+                                  onTap: () async {
+                                    await Navigator.pushNamed(context, RoutesName.userScreen);
+                                    _refreshData(); // Refresh when coming back
+                                  },
+                                ),
+                                if (type != "Agent")
+                                  _buildStatCard(
+                                    "Agents",
+                                    data.agents.toString(),
+                                    Colors.blue.shade600,
+                                    onTap: () async {
+                                      await Navigator.pushNamed(context, RoutesName.agentScreen);
+                                      _refreshData(); // Refresh when coming back
+                                    },
+                                  ),
+                                _buildStatCard(
+                                  "Tutorials",
+                                  data.tutorials.toString(),
+                                  Colors.green,
+                                  onTap: () async {
+                                    await Navigator.pushNamed(context, RoutesName.tutorialScreen);
+                                    _refreshData(); // Refresh when coming back
+                                  },
+                                ),
+                                _buildStatCard(
+                                  "Wallet Balance",
+                                  data.walletBalance.toString(),
+                                  Colors.deepOrange,
+                                  onTap: () async {
+                                    await Navigator.pushNamed(context, RoutesName.walletScreen);
+                                    _refreshData(); // Refresh when coming back
+                                  },
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
                       ),
                     ),
-                  ),
 
-                  const SizedBox(height: 20),
+                    const SizedBox(height: 20),
 
-                  _sectionTitle("Recent Payments"),
+                    _sectionTitle("Recent Payments"),
 
-                  /// 🔥 DYNAMIC PAYMENTS
-                  ...data.recentPayments.map((e) {
-                    final date = DateTime.parse(e.date);
+                    /// DYNAMIC PAYMENTS
+                    if (data.recentPayments.isEmpty)
+                      const Padding(
+                        padding: EdgeInsets.all(32),
+                        child: Center(
+                          child: Text("No recent payments"),
+                        ),
+                      )
+                    else
+                      ...data.recentPayments.map((e) {
+                        final date = DateTime.parse(e.date);
+                        return _paymentTile(
+                          date.day.toString(),
+                          _getMonth(date.month),
+                          e.name,
+                          "₹${e.amount}",
+                          "Completed",
+                        );
+                      }).toList(),
 
-                    return _paymentTile(
-                      date.day.toString(),
-                      _getMonth(date.month),
-                      e.name,
-                      "₹${e.amount}",
-                      "Completed",
-                    );
-                  }).toList(),
-
-                  const SizedBox(height: 20),
-                ],
+                    const SizedBox(height: 20),
+                  ],
+                ),
               ),
             );
           }
@@ -364,14 +388,13 @@ class _HomeScreenState extends State<HomeScreen> {
           return const SizedBox();
         },
       ),
-
     );
   }
 
   String _getMonth(int m) {
     const months = [
-      "JAN","FEB","MAR","APR","MAY","JUN",
-      "JUL","AUG","SEP","OCT","NOV","DEC"
+      "JAN", "FEB", "MAR", "APR", "MAY", "JUN",
+      "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"
     ];
     return months[m - 1];
   }
@@ -397,7 +420,11 @@ class _HomeScreenState extends State<HomeScreen> {
           children: [
             Text(
               title,
-              style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold,),
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 12,
+                fontWeight: FontWeight.bold,
+              ),
             ),
             const SizedBox(height: 5),
             Text(
@@ -420,17 +447,16 @@ class _HomeScreenState extends State<HomeScreen> {
       padding: const EdgeInsets.symmetric(horizontal: 16),
       child: Row(
         children: [
-          Text(title,
-              style:
-              const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+          Text(
+            title,
+            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+          ),
           const Spacer(),
           const Icon(Icons.arrow_forward_ios, size: 14)
         ],
       ),
     );
   }
-
-
 
   /// ================= PAYMENT TILE =================
   Widget _paymentTile(
@@ -448,15 +474,15 @@ class _HomeScreenState extends State<HomeScreen> {
         borderRadius: BorderRadius.circular(12),
         boxShadow: const [
           BoxShadow(
-              color: Colors.grey,
-              blurRadius: 3,
-              offset: Offset(0, 2)),
+            color: Colors.grey,
+            blurRadius: 3,
+            offset: Offset(0, 2),
+          ),
         ],
       ),
       child: Row(
         children: [
-
-          /// 🔷 LEFT DATE BOX (like camp card)
+          /// LEFT DATE BOX
           Container(
             padding: const EdgeInsets.all(10),
             decoration: BoxDecoration(
@@ -482,10 +508,9 @@ class _HomeScreenState extends State<HomeScreen> {
               ],
             ),
           ),
-
           const SizedBox(width: 10),
 
-          /// 🔷 NAME + TIME
+          /// NAME + TIME
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -505,7 +530,7 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
           ),
 
-          /// 🔷 RIGHT SIDE (Amount + Status)
+          /// RIGHT SIDE (Amount + Status)
           Column(
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
@@ -515,16 +540,14 @@ class _HomeScreenState extends State<HomeScreen> {
                   fontWeight: FontWeight.bold,
                 ),
               ),
-
               const SizedBox(height: 5),
-
               Container(
                 padding: const EdgeInsets.symmetric(
-                    horizontal: 8, vertical: 3),
+                  horizontal: 8,
+                  vertical: 3,
+                ),
                 decoration: BoxDecoration(
-                  color: status == "Completed"
-                      ? Colors.green
-                      : Colors.orange,
+                  color: status == "Completed" ? Colors.green : Colors.orange,
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Text(

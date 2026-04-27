@@ -33,7 +33,7 @@ class _ContactScreenState extends State<ContactScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      resizeToAvoidBottomInset: true, // ✅ IMPORTANT
+      resizeToAvoidBottomInset: true, //  IMPORTANT
      backgroundColor: AppColors.whiteColor,
       appBar: AppBar(
         backgroundColor: AppColors.blue,
@@ -74,7 +74,7 @@ class _ContactScreenState extends State<ContactScreen> {
                 right: 20,
                 top: 20,
                 bottom:
-                MediaQuery.of(context).viewInsets.bottom + 20, // 🔥 KEY FIX
+                MediaQuery.of(context).viewInsets.bottom + 20, //  KEY FIX
               ),
               child: Form(
                 key: _formKey,
@@ -199,7 +199,7 @@ class _ContactScreenState extends State<ContactScreen> {
                   onPressed: state is ContactLoading
                       ? null
                       : () {
-                    FocusScope.of(context).unfocus(); // ✅ hide keyboard
+                    FocusScope.of(context).unfocus(); //  hide keyboard
 
                     if (_formKey.currentState!.validate()) {
                       context.read<ContactBloc>().add(

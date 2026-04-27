@@ -7,8 +7,19 @@ class UserRepository {
   final DioClient dioClient;
   UserRepository(this.dioClient);
 
-  Future<PaginatedUserResponse> getUsers({int page = 1, int perPage = 10, String? search}) async {
-    final response = await dioClient.get("${AppUrl.getUsers}?page=$page&per_page=$perPage${search != null ? "&search=$search" : ""}");
+  Future<PaginatedUserResponse> getUsers({
+    int page = 1,
+    int? perPage,
+    String? search,
+  }) async {
+
+
+
+    final response = await dioClient.get(
+      "${AppUrl.getUsers}?page=$page"
+          "${perPage != null ? "&per_page=$perPage" : ""}"
+          "${search != null ? "&search=$search" : ""}",
+    );
     if (response["status"] == 200) {
       return PaginatedUserResponse.fromJson(response);
     } else {

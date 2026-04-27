@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:http/http.dart';
-
 import '../../bloc/terms_bloc/terms_bloc.dart';
 import '../../bloc/terms_bloc/terms_event.dart';
 import '../../bloc/terms_bloc/terms_state.dart';

@@ -1,11 +1,9 @@
 import 'package:executive/config/routes/routes_name.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-
-// 🔥 IMPORT SINGLETON
 import '../../network/dio_network/dio_client_instance.dart';
-
-// Screens
+import '../../repository/user_repo/user_sendotp_repository.dart';
+import '../../repository/user_repo/verify_userotp_repository.dart';
 import '../../views/splash_screen/splash_screen.dart';
 import '../../views/login_view/login_screen.dart';
 import '../../views/otp_verify/otp_verify_screen.dart';
@@ -22,8 +20,6 @@ import '../../views/about_screen/about_screen.dart';
 import '../../views/about_screen/privacy_screen.dart';
 import '../../views/about_screen/terms_screen.dart';
 import '../../views/notification_screen/notification_screen.dart';
-
-// Blocs + Repos
 import '../../bloc/update_bloc/update_bloc.dart';
 import '../../bloc/login_bloc/login_bloc.dart';
 import '../../bloc/otp_bloc/otp_bloc.dart';
@@ -58,7 +54,7 @@ import '../../repository/bank_details_repository/bank_details_repository.dart';
 import '../../repository/bank_details_repository/add_bank_repository.dart';
 import '../../repository/bank_details_repository/update_bank_repository.dart';
 import '../../repository/profile_repo/profile_repository.dart';
-import '../../repository/profile_repo/update_profole_repository.dart';
+import '../../repository/profile_repo/update_profile_repository.dart';
 import '../../repository/tutorial_repository/tutorial_repository.dart';
 import '../../repository/contact_repo/conatctus_repository.dart';
 import '../../repository/agent_repo/agent_repository.dart';
@@ -73,11 +69,10 @@ import '../../repository/about_repo/terms_repository.dart';
 class Routes {
   static Route<dynamic> generateRoute(RouteSettings settings) {
 
-    final dioClient = DioClientInstance.getInstance(); // 🔥 SINGLE INSTANCE
+    final dioClient = DioClientInstance.getInstance();
 
     switch (settings.name) {
 
-    /// 🔥 SPLASH
       case RoutesName.splashScreen:
         return MaterialPageRoute(
           builder: (_) => BlocProvider(
@@ -86,7 +81,6 @@ class Routes {
           ),
         );
 
-    /// 🔥 LOGIN
       case RoutesName.loginScreen:
         return MaterialPageRoute(
           builder: (_) => BlocProvider(
@@ -95,7 +89,6 @@ class Routes {
           ),
         );
 
-    /// 🔥 OTP
       case RoutesName.otpScreen:
         final args = settings.arguments as Map<String, dynamic>;
         return MaterialPageRoute(
@@ -105,7 +98,6 @@ class Routes {
           ),
         );
 
-    /// 🔥 HOME
       case RoutesName.homeScreen:
         return MaterialPageRoute(
           builder: (_) => MultiBlocProvider(
@@ -124,7 +116,6 @@ class Routes {
           ),
         );
 
-    /// 🔥 WALLET
       case RoutesName.walletScreen:
         return MaterialPageRoute(
           builder: (_) => BlocProvider(
@@ -136,7 +127,6 @@ class Routes {
           ),
         );
 
-    /// 🔥 BANK
       case RoutesName.bankDetails:
         return MaterialPageRoute(
           builder: (_) => BlocProvider(
@@ -149,7 +139,6 @@ class Routes {
           ),
         );
 
-    /// 🔥 PROFILE
       case RoutesName.profileScreen:
         return MaterialPageRoute(
           builder: (_) => BlocProvider(
@@ -161,7 +150,6 @@ class Routes {
           ),
         );
 
-    /// 🔥 TUTORIAL
       case RoutesName.tutorialScreen:
         return MaterialPageRoute(
           builder: (_) => BlocProvider(
@@ -171,7 +159,6 @@ class Routes {
           ),
         );
 
-    /// 🔥 CONTACT
       case RoutesName.contactUsScreen:
         return MaterialPageRoute(
           builder: (_) => BlocProvider(
@@ -180,7 +167,6 @@ class Routes {
           ),
         );
 
-    /// 🔥 AGENT
       case RoutesName.agentScreen:
         return MaterialPageRoute(
           builder: (_) => BlocProvider(
@@ -192,19 +178,20 @@ class Routes {
           ),
         );
 
-    /// 🔥 USER
       case RoutesName.userScreen:
         return MaterialPageRoute(
           builder: (_) => BlocProvider(
             create: (_) => UserBloc(
               userRepository: UserRepository(dioClient),
               userPostRepository: UserPostRepository(dioClient),
+
+              sendOtpRepository: UserSendOtpRepository(dioClient),
+              verifyOtpRepository: UserOtpVerifyRepository(dioClient),
             ),
             child: UserScreen(scaffoldKey: GlobalKey(), showBackButton: true),
           ),
         );
 
-    /// 🔥 SUBSCRIPTION
       case RoutesName.subscriptionScreen:
         return MaterialPageRoute(
           builder: (_) => BlocProvider(
@@ -215,7 +202,6 @@ class Routes {
           ),
         );
 
-    /// 🔥 ABOUT / TERMS / PRIVACY
       case RoutesName.aboutScreen:
         return MaterialPageRoute(
           builder: (_) => BlocProvider(
@@ -241,7 +227,6 @@ class Routes {
           ),
         );
 
-    /// 🔥 NOTIFICATION
       case RoutesName.notificationScreen:
         return MaterialPageRoute(
           builder: (_) => BlocProvider(
@@ -252,7 +237,6 @@ class Routes {
           ),
         );
 
-    /// DEFAULT
       default:
         return MaterialPageRoute(
           builder: (_) => const Scaffold(

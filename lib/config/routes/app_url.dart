@@ -32,5 +32,7 @@ class AppUrl {
   static const String getWallet ="partner/wallet/history";
   static const String walletWithDraw ="partner/wallet/debit";
   static const String updateApi = "version-control?version";
+  static const String sendUserOtp ="partner/send-otp";
+  static const String userOtpVerify ="partner/verify-otp";
 
 }

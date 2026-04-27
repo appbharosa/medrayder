@@ -24,7 +24,6 @@ class _BankScreenState extends State<BankScreen> {
     context.read<BankBloc>().add(FetchBanks());
   }
 
-  /// Show snackbar on top of bottom sheet
   void _showMsg(String msg, {Color bgColor = Colors.grey, required BuildContext ctx}) {
     ScaffoldMessenger.of(ctx)
       ..hideCurrentSnackBar()
@@ -45,6 +44,7 @@ class _BankScreenState extends State<BankScreen> {
   Widget build(BuildContext context) {
     return SafeArea(
       bottom: true,
+      top: false,
       child: Scaffold(
         appBar: AppBar(
           backgroundColor: AppColors.blue,
