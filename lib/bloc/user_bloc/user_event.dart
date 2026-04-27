@@ -22,6 +22,13 @@ class AddUser extends UserEvent {
   final String addressType;
   final bool isDefault;
 
+  // Nominee fields
+  final String nomineeFullName;
+  final String nomineeMobile;
+  final String nomineeDateOfBirth;
+  final String nomineeRelationship;
+  final String nomineeGender;
+
   AddUser({
     required this.name,
     required this.email,
@@ -41,6 +48,11 @@ class AddUser extends UserEvent {
     required this.city,
     required this.addressType,
     required this.isDefault,
+    required this.nomineeFullName,
+    required this.nomineeMobile,
+    required this.nomineeDateOfBirth,
+    required this.nomineeRelationship,
+    required this.nomineeGender,
   });
 }
 

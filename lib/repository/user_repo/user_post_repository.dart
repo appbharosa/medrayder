@@ -18,7 +18,7 @@ class UserPostRepository {
     required int bloodGroupId,
     required int coverageCategoryId,
 
-    //  ADDRESS
+    // Address
     required String hno,
     required String buildingNo,
     required String landmark,
@@ -30,8 +30,14 @@ class UserPostRepository {
     required bool isDefault,
 
     File? image,
-  }) async {
 
+    // Nominee
+    required String nomineeFullName,
+    required String nomineeMobile,
+    required String nomineeDateOfBirth,
+    required String nomineeRelationship,
+    required String nomineeGender,
+  }) async {
     FormData formData = FormData.fromMap({
       "user_id": userId,
       "name": name,
@@ -42,7 +48,7 @@ class UserPostRepository {
       "blood_group": bloodGroupId,
       "coverage_category": coverageCategoryId,
 
-      //  ADDRESS
+      // Address
       "hno": hno,
       "building_no": buildingNo,
       "landmark": landmark,
@@ -53,6 +59,13 @@ class UserPostRepository {
       "address_type": addressType,
       "default_address": isDefault ? 1 : 0,
 
+      // Nominee
+      "nominee_full_name": nomineeFullName,
+      "nominee_mobile": nomineeMobile,
+      "nominee_date_of_birth": nomineeDateOfBirth,
+      "nominee_relationship": nomineeRelationship,
+      "nominee_gender": nomineeGender,
+
       if (image != null)
         "image": await MultipartFile.fromFile(
           image.path,
@@ -60,9 +73,7 @@ class UserPostRepository {
         ),
     });
 
-    final response =
-    await dioClient.post(AppUrl.getUsers, data: formData);
-
+    final response = await dioClient.post(AppUrl.getUsers, data: formData);
     if (response["status"] != 200) {
       throw response["message"];
     }

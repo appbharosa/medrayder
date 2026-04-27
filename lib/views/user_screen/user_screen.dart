@@ -376,6 +376,7 @@ Widget _rowPinCodeInput(
   );
 }
 
+
 // AddUserBottomSheet with TOP SNACKBAR using Overlay
 class AddUserBottomSheet extends StatefulWidget {
   final UserBloc userBloc;
@@ -388,8 +389,7 @@ class AddUserBottomSheet extends StatefulWidget {
   });
 
   @override
-  State<AddUserBottomSheet> createState() =>
-      _AddUserBottomSheetState();
+  State<AddUserBottomSheet> createState() => _AddUserBottomSheetState();
 }
 
 class _AddUserBottomSheetState extends State<AddUserBottomSheet> {
@@ -409,10 +409,6 @@ class _AddUserBottomSheetState extends State<AddUserBottomSheet> {
   String? addressType;
   bool isDefaultAddress = false;
 
-  bool isOtpSent = false;
-  bool isEmailVerified = false;
-  final otpController = TextEditingController();
-
   String? gender;
   int? selectedBloodGroupId;
   int? selectedCategoryId;
@@ -424,6 +420,13 @@ class _AddUserBottomSheetState extends State<AddUserBottomSheet> {
   List<Category> categories = [];
 
   OverlayEntry? _overlayEntry;
+
+  // Nominee controllers
+  final nomineeName = TextEditingController();
+  final nomineeMobile = TextEditingController();
+  final nomineeDob = TextEditingController();
+  String? nomineeRelationship;
+  String? nomineeGender;
 
   @override
   void initState() {
@@ -452,14 +455,12 @@ class _AddUserBottomSheetState extends State<AddUserBottomSheet> {
   }
 
   void _showTopSnackbar(String message, {bool isError = true}) {
-    // Remove existing overlay if any
     _removeOverlay();
 
-    // Create overlay entry
     OverlayState? overlayState = Overlay.of(context);
     _overlayEntry = OverlayEntry(
       builder: (context) => Positioned(
-        top: 50, // Position from top
+        top: 50,
         left: 16,
         right: 16,
         child: Material(
@@ -521,10 +522,8 @@ class _AddUserBottomSheetState extends State<AddUserBottomSheet> {
       ),
     );
 
-    // Add overlay to screen
-    overlayState?.insert(_overlayEntry!);
+    overlayState.insert(_overlayEntry!);
 
-    // Auto remove after 3 seconds
     Future.delayed(const Duration(seconds: 3), () {
       if (mounted) {
         _removeOverlay();
@@ -555,11 +554,17 @@ class _AddUserBottomSheetState extends State<AddUserBottomSheet> {
         controller: c,
         decoration: InputDecoration(
           labelText: label,
-          border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(10)),
+          border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
         ),
       ),
     );
+  }
+
+  // Helper method to validate email format
+  bool isEmailValid(String email) {
+    // Simple regex: ensures something@domain.extension (e.g., bbau@gmail.com)
+    final emailRegex = RegExp(r'^[^@]+@[^@]+\.[^@]+$');
+    return emailRegex.hasMatch(email);
   }
 
   @override
@@ -570,20 +575,21 @@ class _AddUserBottomSheetState extends State<AddUserBottomSheet> {
         height: MediaQuery.of(context).size.height * 0.75,
         child: Padding(
           padding: EdgeInsets.only(
-              left: 16,
-              right: 16,
-              top: 20,
-              bottom: MediaQuery.of(context).viewInsets.bottom + 20),
+            left: 16,
+            right: 16,
+            top: 20,
+            bottom: MediaQuery.of(context).viewInsets.bottom + 20,
+          ),
           child: SingleChildScrollView(
             child: Column(
               children: [
                 Align(
                   alignment: Alignment.topLeft,
-                  child: const Text("Add User",
-                      style: TextStyle(
-                          fontSize: 18, fontWeight: FontWeight.bold)),
+                  child: const Text(
+                    "Add User",
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  ),
                 ),
-
                 const SizedBox(height: 20),
 
                 GestureDetector(
@@ -593,149 +599,58 @@ class _AddUserBottomSheetState extends State<AddUserBottomSheet> {
                     backgroundImage: pickedImage != null
                         ? FileImage(File(pickedImage!.path))
                         : null,
-                    child: pickedImage == null
-                        ? const Icon(Icons.camera_alt)
-                        : null,
+                    child: pickedImage == null ? const Icon(Icons.camera_alt) : null,
                   ),
                 ),
-
                 const SizedBox(height: 20),
 
                 _input("Name", name),
+                const SizedBox(height: 16),
 
-                BlocListener<UserBloc, UserState>(
-                  bloc: widget.userBloc,
-                  listener: (context, state) {
-                    if (state is UserOtpSent) {
-                      setState(() => isOtpSent = true);
-                      _showTopSnackbar("OTP sent successfully", isError: false);
-                    }
-
-                    if (state is UserOtpVerified) {
-                      setState(() => isEmailVerified = true);
-                      _showTopSnackbar("Email Verified Successfully", isError: false);
-                    }
-
-                    if (state is UserOtpError) {
-                      _showTopSnackbar(state.message);
-                    }
-                  },
-                  child: Column(
-                    children: [
-                      TextField(
-                        controller: email,
-                        decoration: InputDecoration(
-                          labelText: "Email",
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                          suffix: TextButton(
-                            onPressed: () {
-                              if (email.text.isEmpty) {
-                                _showTopSnackbar("Please enter email");
-                                return;
-                              }
-                              widget.userBloc.add(SendUserOtp(email.text));
-                            },
-                            child: const Text("Send OTP"),
-                          ),
-                        ),
-                      ),
-
-                      const SizedBox(height: 10),
-
-                      if (isOtpSent && !isEmailVerified)
-                        Row(
-                          children: [
-                            Expanded(
-                              child: TextField(
-                                controller: otpController,
-                                keyboardType: TextInputType.number,
-                                decoration: InputDecoration(
-                                  labelText: "Enter OTP",
-                                  border: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(10),
-                                  ),
-                                ),
-                              ),
-                            ),
-                            const SizedBox(width: 10),
-                            ElevatedButton(
-                              onPressed: () {
-                                if (otpController.text.isEmpty) {
-                                  _showTopSnackbar("Please enter OTP");
-                                  return;
-                                }
-                                widget.userBloc.add(
-                                  VerifyUserOtp(
-                                    email: email.text,
-                                    otp: otpController.text,
-                                  ),
-                                );
-                              },
-                              child: const Text("Verify"),
-                            )
-                          ],
-                        ),
-
-                      if (isEmailVerified)
-                        const Padding(
-                          padding: EdgeInsets.only(top: 8),
-                          child: Text(
-                            "Email Verified ✓",
-                            style: TextStyle(color: Colors.green),
-                          ),
-                        ),
-                      const SizedBox(height: 10),
-                    ],
-                  ),
-                ),
+                // Email field – mandatory and must be valid format
+                _input("Email", email),
+                const SizedBox(height: 16),
 
                 _inputMobile("Mobile", mobile, isMobile: true),
+                const SizedBox(height: 16),
 
                 DropdownButtonFormField<String>(
-                  value: gender,
+                  initialValue: gender,
                   decoration: InputDecoration(
-                      labelText: "Gender",
-                      border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(10))),
+                    labelText: "Gender",
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                  ),
                   items: ["male", "female", "other"]
-                      .map((e) =>
-                      DropdownMenuItem(value: e, child: Text(e)))
+                      .map((e) => DropdownMenuItem(value: e, child: Text(e)))
                       .toList(),
                   onChanged: (v) => setState(() => gender = v),
                 ),
-
                 const SizedBox(height: 16),
 
                 DropdownButtonFormField<int>(
-                  value: selectedBloodGroupId,
+                  initialValue: selectedBloodGroupId,
                   decoration: InputDecoration(
-                      labelText: "Blood Group",
-                      border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(10))),
+                    labelText: "Blood Group",
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                  ),
                   items: bloodGroups
-                      .map((e) =>
-                      DropdownMenuItem(value: e.id, child: Text(e.name)))
+                      .map((e) => DropdownMenuItem(value: e.id, child: Text(e.name)))
                       .toList(),
                   onChanged: (v) => setState(() => selectedBloodGroupId = v),
                 ),
-
                 const SizedBox(height: 16),
 
                 DropdownButtonFormField<int>(
-                  value: selectedCategoryId,
+                  initialValue: selectedCategoryId,
                   decoration: InputDecoration(
-                      labelText: "Category",
-                      border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(10))),
+                    labelText: "Category",
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                  ),
                   items: categories
-                      .map((e) =>
-                      DropdownMenuItem(value: e.id, child: Text(e.name)))
+                      .map((e) => DropdownMenuItem(value: e.id, child: Text(e.name)))
                       .toList(),
                   onChanged: (v) => setState(() => selectedCategoryId = v),
                 ),
-
                 const SizedBox(height: 16),
 
                 TextField(
@@ -743,8 +658,7 @@ class _AddUserBottomSheetState extends State<AddUserBottomSheet> {
                   readOnly: true,
                   decoration: InputDecoration(
                     labelText: "DOB",
-                    border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(10)),
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
                   ),
                   onTap: () async {
                     final picked = await showDatePicker(
@@ -753,14 +667,11 @@ class _AddUserBottomSheetState extends State<AddUserBottomSheet> {
                       firstDate: DateTime(1900),
                       lastDate: DateTime.now(),
                     );
-
                     if (picked != null) {
-                      dob.text =
-                      "${picked.year}-${picked.month.toString().padLeft(2, '0')}-${picked.day.toString().padLeft(2, '0')}";
+                      dob.text = "${picked.year}-${picked.month.toString().padLeft(2, '0')}-${picked.day.toString().padLeft(2, '0')}";
                     }
                   },
                 ),
-
                 const SizedBox(height: 20),
 
                 Align(
@@ -770,23 +681,19 @@ class _AddUserBottomSheetState extends State<AddUserBottomSheet> {
                     style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                   ),
                 ),
-
                 const SizedBox(height: 16),
 
                 DropdownButtonFormField<String>(
-                  value: addressType,
+                  initialValue: addressType,
                   decoration: InputDecoration(
                     labelText: "Address Type",
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(10),
-                    ),
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
                   ),
                   items: ["Permanent Address", "Temporary Address"]
                       .map((e) => DropdownMenuItem(value: e, child: Text(e)))
                       .toList(),
                   onChanged: (v) => setState(() => addressType = v),
                 ),
-
                 const SizedBox(height: 16),
 
                 Row(
@@ -795,22 +702,20 @@ class _AddUserBottomSheetState extends State<AddUserBottomSheet> {
                     _rowInput("Building No", buildingNo),
                   ],
                 ),
-
                 Row(
                   children: [
                     _rowInput("Landmark", landmark),
                     _rowPinCodeInput("Pincode", pincode, isPincode: true),
                   ],
                 ),
-
                 Row(
                   children: [
                     _rowInput("State", stateCtrl),
                     _rowInput("City", city),
                   ],
                 ),
-
                 _input("Address", address),
+                const SizedBox(height: 20),
 
                 CheckboxListTile(
                   contentPadding: EdgeInsets.zero,
@@ -820,7 +725,67 @@ class _AddUserBottomSheetState extends State<AddUserBottomSheet> {
                     setState(() => isDefaultAddress = v ?? false);
                   },
                 ),
+                const SizedBox(height: 10),
 
+                // Nominee Details Section
+                const SizedBox(height: 20),
+                Align(
+                  alignment: Alignment.topLeft,
+                  child: Text(
+                    "Nominee Details",
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                  ),
+                ),
+                const SizedBox(height: 16),
+
+                _input("Nominee Full Name", nomineeName),
+                _inputMobile("Nominee Mobile", nomineeMobile, isMobile: true),
+
+                TextField(
+                  controller: nomineeDob,
+                  readOnly: true,
+                  decoration: InputDecoration(
+                    labelText: "Nominee Date of Birth",
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                  ),
+                  onTap: () async {
+                    final picked = await showDatePicker(
+                      context: context,
+                      initialDate: DateTime.now(),
+                      firstDate: DateTime(1900),
+                      lastDate: DateTime.now(),
+                    );
+                    if (picked != null) {
+                      nomineeDob.text = "${picked.year}-${picked.month.toString().padLeft(2, '0')}-${picked.day.toString().padLeft(2, '0')}";
+                    }
+                  },
+                ),
+                const SizedBox(height: 16),
+
+                DropdownButtonFormField<String>(
+                  initialValue: nomineeRelationship,
+                  decoration: InputDecoration(
+                    labelText: "Nominee Relationship",
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                  ),
+                  items: ["Father", "Mother", "Husband", "Wife", "Brother", "Sister", "Other"]
+                      .map((e) => DropdownMenuItem(value: e, child: Text(e)))
+                      .toList(),
+                  onChanged: (v) => setState(() => nomineeRelationship = v),
+                ),
+                const SizedBox(height: 16),
+
+                DropdownButtonFormField<String>(
+                  initialValue: nomineeGender,
+                  decoration: InputDecoration(
+                    labelText: "Nominee Gender",
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                  ),
+                  items: ["male", "female", "other"]
+                      .map((e) => DropdownMenuItem(value: e, child: Text(e)))
+                      .toList(),
+                  onChanged: (v) => setState(() => nomineeGender = v),
+                ),
                 const SizedBox(height: 20),
 
                 BlocConsumer<UserBloc, UserState>(
@@ -829,8 +794,7 @@ class _AddUserBottomSheetState extends State<AddUserBottomSheet> {
                     if (state is UserAdded) {
                       _removeOverlay();
                       Navigator.pop(context);
-                      ScaffoldMessenger.of(widget.rootContext)
-                          .showSnackBar(
+                      ScaffoldMessenger.of(widget.rootContext).showSnackBar(
                         const SnackBar(
                           content: Text("User Added Successfully"),
                           backgroundColor: Colors.green,
@@ -839,7 +803,6 @@ class _AddUserBottomSheetState extends State<AddUserBottomSheet> {
                         ),
                       );
                     }
-
                     if (state is UserAddError) {
                       _showTopSnackbar(state.message);
                     }
@@ -861,84 +824,96 @@ class _AddUserBottomSheetState extends State<AddUserBottomSheet> {
                         onPressed: loading
                             ? null
                             : () async {
-                          // BASIC VALIDATION - ALL WITH TOP SNACKBAR
+                          // Basic validation
                           if (name.text.isEmpty) {
                             _showTopSnackbar("Please enter name");
                             return;
                           }
-
                           if (email.text.isEmpty) {
                             _showTopSnackbar("Please enter email");
                             return;
                           }
-
+                          // Email format validation
+                          if (!isEmailValid(email.text)) {
+                            _showTopSnackbar("Please enter a valid email address (e.g., name@domain.com)");
+                            return;
+                          }
                           if (mobile.text.isEmpty) {
                             _showTopSnackbar("Please enter mobile number");
                             return;
                           }
-
                           if (gender == null) {
                             _showTopSnackbar("Please select gender");
                             return;
                           }
-
                           if (dob.text.isEmpty) {
                             _showTopSnackbar("Please select date of birth");
                             return;
                           }
-
                           if (selectedBloodGroupId == null) {
                             _showTopSnackbar("Please select blood group");
                             return;
                           }
-
                           if (selectedCategoryId == null) {
                             _showTopSnackbar("Please select category");
                             return;
                           }
-
-                          if (!isEmailVerified) {
-                            _showTopSnackbar("Please verify email first");
-                            return;
-                          }
-
                           if (mobile.text.length != 10) {
                             _showTopSnackbar("Mobile number must be 10 digits");
                             return;
                           }
-
                           if (pincode.text.isNotEmpty && pincode.text.length != 6) {
                             _showTopSnackbar("Pincode must be 6 digits");
                             return;
                           }
-
                           if (addressType == null) {
                             _showTopSnackbar("Please select address type");
                             return;
                           }
-
                           if (hno.text.isEmpty) {
                             _showTopSnackbar("Please enter house number");
                             return;
                           }
-
                           if (buildingNo.text.isEmpty) {
                             _showTopSnackbar("Please enter building number");
                             return;
                           }
-
                           if (address.text.isEmpty) {
                             _showTopSnackbar("Please enter address");
                             return;
                           }
-
                           if (stateCtrl.text.isEmpty) {
                             _showTopSnackbar("Please enter state");
                             return;
                           }
-
                           if (city.text.isEmpty) {
                             _showTopSnackbar("Please enter city");
+                            return;
+                          }
+
+                          // Nominee validation
+                          if (nomineeName.text.isEmpty) {
+                            _showTopSnackbar("Please enter nominee full name");
+                            return;
+                          }
+                          if (nomineeMobile.text.isEmpty) {
+                            _showTopSnackbar("Please enter nominee mobile number");
+                            return;
+                          }
+                          if (nomineeMobile.text.length != 10) {
+                            _showTopSnackbar("Nominee mobile number must be 10 digits");
+                            return;
+                          }
+                          if (nomineeDob.text.isEmpty) {
+                            _showTopSnackbar("Please select nominee date of birth");
+                            return;
+                          }
+                          if (nomineeRelationship == null) {
+                            _showTopSnackbar("Please select nominee relationship");
+                            return;
+                          }
+                          if (nomineeGender == null) {
+                            _showTopSnackbar("Please select nominee gender");
                             return;
                           }
 
@@ -953,9 +928,7 @@ class _AddUserBottomSheetState extends State<AddUserBottomSheet> {
                             bloodGroupId: selectedBloodGroupId!,
                             coverageCategoryId: selectedCategoryId!,
                             userId: userId!,
-                            image: pickedImage != null
-                                ? File(pickedImage!.path)
-                                : null,
+                            image: pickedImage != null ? File(pickedImage!.path) : null,
                             hno: hno.text,
                             buildingNo: buildingNo.text,
                             landmark: landmark.text,
@@ -963,10 +936,13 @@ class _AddUserBottomSheetState extends State<AddUserBottomSheet> {
                             pincode: pincode.text,
                             state: stateCtrl.text,
                             city: city.text,
-                            addressType: addressType == "Permanent Address"
-                                ? "permanent"
-                                : "temporary",
+                            addressType: addressType == "Permanent Address" ? "permanent" : "temporary",
                             isDefault: isDefaultAddress,
+                            nomineeFullName: nomineeName.text,
+                            nomineeMobile: nomineeMobile.text,
+                            nomineeDateOfBirth: nomineeDob.text,
+                            nomineeRelationship: nomineeRelationship!,
+                            nomineeGender: nomineeGender!,
                           ));
                         },
                         child: loading
@@ -988,7 +964,7 @@ class _AddUserBottomSheetState extends State<AddUserBottomSheet> {
                       ),
                     );
                   },
-                )
+                ),
               ],
             ),
           ),

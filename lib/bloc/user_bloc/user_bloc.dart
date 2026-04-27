@@ -70,8 +70,6 @@ class UserBloc extends Bloc<UserEvent, UserState> {
           bloodGroupId: event.bloodGroupId,
           coverageCategoryId: event.coverageCategoryId,
           image: event.image,
-
-          // ADDRESS
           hno: event.hno,
           buildingNo: event.buildingNo,
           landmark: event.landmark,
@@ -81,10 +79,15 @@ class UserBloc extends Bloc<UserEvent, UserState> {
           city: event.city,
           addressType: event.addressType,
           isDefault: event.isDefault,
+          // Nominee
+          nomineeFullName: event.nomineeFullName,
+          nomineeMobile: event.nomineeMobile,
+          nomineeDateOfBirth: event.nomineeDateOfBirth,
+          nomineeRelationship: event.nomineeRelationship,
+          nomineeGender: event.nomineeGender,
         );
 
         emit(UserAdded());
-
       } catch (e) {
         emit(UserAddError(e.toString()));
       }
