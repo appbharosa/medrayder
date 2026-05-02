@@ -11,6 +11,7 @@ class UpdateProfileEvent extends ProfileEvent {
   final String gender;
   final String occupation;
   final String dob;
+  final String panCard;
   final File? image;
 
   UpdateProfileEvent({
@@ -18,6 +19,7 @@ class UpdateProfileEvent extends ProfileEvent {
     required this.gender,
     required this.occupation,
     required this.dob,
+    required this.panCard,
     this.image,
   });
 }

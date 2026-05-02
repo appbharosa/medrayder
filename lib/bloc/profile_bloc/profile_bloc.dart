@@ -52,6 +52,7 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
       ) async {
     try {
       emit(ProfileUpdating());
+      print("🟡 BLoC: Sending panCard: '${event.panCard}'");
 
       final response = await updateRepository.updateProfile(
         name: event.name,
@@ -59,16 +60,21 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
         occupation: event.occupation,
         dob: event.dob,
         image: event.image,
+        panCard: event.panCard,
       );
+
+      print("🟢 BLoC: Update response message: ${response.message}");
+
       final updatedData = await repository.getProfile();
+      print("🟢 BLoC: Refetched profile - panCard: '${updatedData.panCard}'");
 
       emit(ProfileLoaded(
         updatedData,
         isEditable: false,
         message: response.message,
       ));
-
     } catch (e) {
+      print("🔴 BLoC: Update error - $e");
       emit(ProfileError(e.toString()));
     }
   }

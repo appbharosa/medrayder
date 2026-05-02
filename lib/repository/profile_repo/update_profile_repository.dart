@@ -17,6 +17,7 @@ class UpdateProfileRepository {
     required String gender,
     required String occupation,
     required String dob,
+    required String panCard,
     File? image,
   }) async {
 
@@ -25,6 +26,7 @@ class UpdateProfileRepository {
       "gender": gender,
       "occupation": occupation,
       "dob": dob,
+      "pancard":panCard,
       if (image != null)
         "image": await MultipartFile.fromFile(image.path),
     });

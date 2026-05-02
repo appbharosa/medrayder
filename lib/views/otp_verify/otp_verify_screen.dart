@@ -22,35 +22,24 @@ class OtpVerifyScreen extends StatefulWidget {
 }
 
 class _OtpVerifyScreenState extends State<OtpVerifyScreen> {
+  final TextEditingController _otpController = TextEditingController();
+  final FocusNode _otpFocusNode = FocusNode();
 
-  final List<TextEditingController> controllers =
-  List.generate(6, (_) => TextEditingController());
-
-  final List<FocusNode> focusNodes =
-  List.generate(6, (_) => FocusNode());
-
-  String getOtp() {
-    return controllers.map((e) => e.text).join();
-  }
+  String getOtp() => _otpController.text.trim();
 
   @override
   void initState() {
     super.initState();
-
-    /// Auto focus first field
+    // Auto-focus the single field after build
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      focusNodes[0].requestFocus();
+      _otpFocusNode.requestFocus();
     });
   }
 
   @override
   void dispose() {
-    for (var c in controllers) {
-      c.dispose();
-    }
-    for (var f in focusNodes) {
-      f.dispose();
-    }
+    _otpController.dispose();
+    _otpFocusNode.dispose();
     super.dispose();
   }
 
@@ -77,42 +66,33 @@ class _OtpVerifyScreenState extends State<OtpVerifyScreen> {
           ),
           centerTitle: true,
         ),
-
         body: BlocConsumer<OtpBloc, OtpState>(
           listener: (context, state) {
             if (state is OtpSuccess) {
               _showMsg("OTP Verified Successfully", bgColor: Colors.green);
-
               Navigator.pushNamedAndRemoveUntil(
                 context,
                 RoutesName.homeScreen,
                     (route) => false,
               );
             }
-
             if (state is OtpError) {
               _showMsg(state.message, bgColor: Colors.red);
             }
           },
-
           builder: (context, state) {
             return Column(
               children: [
-
-                /// ===== CONTENT =====
                 Expanded(
                   child: SingleChildScrollView(
                     padding: const EdgeInsets.all(20),
                     child: Column(
                       children: [
-
                         SizedBox(
                           height: 160,
                           child: SvgPicture.asset("assets/med.svg"),
                         ),
-
                         const SizedBox(height: 30),
-
                         const Text(
                           "Enter OTP",
                           style: TextStyle(
@@ -120,127 +100,69 @@ class _OtpVerifyScreenState extends State<OtpVerifyScreen> {
                             fontWeight: FontWeight.bold,
                           ),
                         ),
-
                         const SizedBox(height: 10),
-
                         const Text(
                           "Enter the 6-digit OTP sent to your number",
                           textAlign: TextAlign.center,
                           style: TextStyle(color: Colors.grey),
                         ),
-
                         const SizedBox(height: 30),
-
-                        ///  FIXED OTP FIELDS
-                        // Row(
-                        //   mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        //   children: List.generate(6, (index) {
-                        //     return SizedBox(
-                        //       width: 45,
-                        //       child: RawKeyboardListener(
-                        //         focusNode: FocusNode(),
-                        //         onKey: (event) {
-                        //           if (event is RawKeyDownEvent &&
-                        //               event.logicalKey ==
-                        //                   LogicalKeyboardKey.backspace) {
-                        //             if (controllers[index].text.isEmpty &&
-                        //                 index > 0) {
-                        //               focusNodes[index - 1].requestFocus();
-                        //             }
-                        //           }
-                        //         },
-                        //         child: TextField(
-                        //           controller: controllers[index],
-                        //           focusNode: focusNodes[index],
-                        //           keyboardType: TextInputType.number,
-                        //           textInputAction: index == 5
-                        //               ? TextInputAction.done
-                        //               : TextInputAction.next,
-                        //           inputFormatters: [
-                        //             FilteringTextInputFormatter.digitsOnly
-                        //           ],
-                        //           maxLength: 1,
-                        //           textAlign: TextAlign.center,
-                        //           style: const TextStyle(
-                        //             fontSize: 18,
-                        //             fontWeight: FontWeight.bold,
-                        //           ),
-                        //           decoration: InputDecoration(
-                        //             counterText: "",
-                        //             filled: true,
-                        //             fillColor: Colors.white,
-                        //             border: OutlineInputBorder(
-                        //               borderRadius: BorderRadius.circular(10),
-                        //             ),
-                        //           ),
-                        //
-                        //           /// ✅ FIXED FOR iPad
-                        //           onChanged: (value) {
-                        //             if (value.isNotEmpty) {
-                        //               if (index < 5) {
-                        //                 focusNodes[index + 1].requestFocus();
-                        //               } else {
-                        //                 focusNodes[index].unfocus();
-                        //               }
-                        //             }
-                        //           },
-                        //
-                        //           onTap: () {
-                        //             focusNodes[index].requestFocus();
-                        //           },
-                        //         ),
-                        //       ),
-                        //     );
-                        //   }),
-                        // ),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: List.generate(6, (index) {
-                            return SizedBox(
-                              width: 45,
-                              child: TextField(
-                                controller: controllers[index],
-                                focusNode: focusNodes[index],
-                                keyboardType: TextInputType.number,
-                                textInputAction:
-                                index == 5 ? TextInputAction.done : TextInputAction.next,
-                                inputFormatters: [
-                                  FilteringTextInputFormatter.digitsOnly
-                                ],
-                                maxLength: 1,
-                                textAlign: TextAlign.center,
-                                decoration: InputDecoration(
-                                  counterText: "",
-                                  border: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(10),
-                                  ),
-                                ),
-
-                                onChanged: (value) {
-                                  if (value.isNotEmpty) {
-                                    if (index < 5) {
-                                      FocusScope.of(context)
-                                          .requestFocus(focusNodes[index + 1]);
-                                    } else {
-                                      focusNodes[index].unfocus();
-                                    }
-                                  } else {
-                                    if (index > 0) {
-                                      FocusScope.of(context)
-                                          .requestFocus(focusNodes[index - 1]);
-                                    }
-                                  }
-                                },
-                              ),
-                            );
-                          }),
-                        )
+                        // Single OTP TextField
+                        TextField(
+                          controller: _otpController,
+                          focusNode: _otpFocusNode,
+                          keyboardType: TextInputType.number,
+                          textInputAction: TextInputAction.done,
+                          maxLength: 6,
+                          inputFormatters: [
+                            FilteringTextInputFormatter.digitsOnly,
+                          ],
+                          textAlign: TextAlign.center,
+                          style: const TextStyle(
+                            fontSize: 24,
+                            fontWeight: FontWeight.bold,
+                            letterSpacing: 8,
+                          ),
+                          decoration: InputDecoration(
+                            counterText: "",
+                            hintText: "000000",
+                            hintStyle: TextStyle(
+                              fontSize: 24,
+                              fontWeight: FontWeight.bold,
+                              letterSpacing: 8,
+                              color: Colors.grey.shade300,
+                            ),
+                            filled: true,
+                            fillColor: Colors.white,
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              borderSide: BorderSide(color: Colors.grey.shade300),
+                            ),
+                            enabledBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              borderSide: BorderSide(color: Colors.grey.shade300),
+                            ),
+                            focusedBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              borderSide: const BorderSide(color: AppColors.blue, width: 2),
+                            ),
+                          ),
+                          onChanged: (value) {
+                            // Optional: auto-submit when 6 digits are entered
+                            if (value.length == 6) {
+                              _submitOtp(state);
+                            }
+                          },
+                          onSubmitted: (value) {
+                            if (value.length == 6) {
+                              _submitOtp(state);
+                            }
+                          },
+                        ),
                       ],
                     ),
                   ),
                 ),
-
-                /// ===== VERIFY BUTTON =====
                 Padding(
                   padding: const EdgeInsets.all(16),
                   child: SizedBox(
@@ -253,26 +175,9 @@ class _OtpVerifyScreenState extends State<OtpVerifyScreen> {
                           borderRadius: BorderRadius.circular(10),
                         ),
                       ),
-
                       onPressed: state is OtpLoading
                           ? null
-                          : () {
-                        final otp = getOtp();
-
-                        if (otp.length != 6) {
-                          _showMsg("Enter valid 6-digit OTP",
-                              bgColor: Colors.red);
-                          return;
-                        }
-
-                        context.read<OtpBloc>().add(
-                          SubmitOtpEvent(
-                            userId: widget.userId,
-                            otp: otp,
-                          ),
-                        );
-                      },
-
+                          : () => _submitOtp(state),
                       child: state is OtpLoading
                           ? const SizedBox(
                         height: 20,
@@ -296,6 +201,20 @@ class _OtpVerifyScreenState extends State<OtpVerifyScreen> {
             );
           },
         ),
+      ),
+    );
+  }
+
+  void _submitOtp(OtpState state) {
+    final otp = getOtp();
+    if (otp.length != 6) {
+      _showMsg("Enter valid 6-digit OTP", bgColor: Colors.red);
+      return;
+    }
+    context.read<OtpBloc>().add(
+      SubmitOtpEvent(
+        userId: widget.userId,
+        otp: otp,
       ),
     );
   }

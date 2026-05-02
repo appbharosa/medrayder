@@ -18,6 +18,7 @@ class ProfileModel {
   final int availability;
   final String? profileImage;
   final String status;
+  final String panCard;
 
   ProfileModel({
     required this.id,
@@ -38,6 +39,7 @@ class ProfileModel {
     required this.availability,
     this.profileImage,
     required this.status,
+    required this.panCard
   });
 
   factory ProfileModel.fromJson(Map<String, dynamic> json) {
@@ -63,6 +65,7 @@ class ProfileModel {
       availability: data["availability"] ?? 0,
       profileImage: data["profile_image"],
       status: data["status"] ?? "",
+      panCard: data["pancard"] ?? "",
     );
   }
 }

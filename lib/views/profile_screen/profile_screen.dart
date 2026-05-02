@@ -24,6 +24,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   final dobController = TextEditingController();
   final occupation = TextEditingController();
   final uniqueId = TextEditingController();
+  final panController = TextEditingController();
 
   String? selectedGender;
   File? selectedImage;
@@ -143,6 +144,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         occupation: occupation.text.trim(),
                         dob: dobController.text.trim(),
                         image: selectedImage,
+                        panCard: panController.text.trim(),
                       ),
                     );
                   },
@@ -185,6 +187,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           if (state is ProfileLoaded) {
             profile = state.profile;
 
+
             // SET DATA ONLY ONCE
             if (nameController.text.isEmpty) {
               nameController.text = profile!.name;
@@ -192,8 +195,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
               emailController.text = profile!.email;
               occupation.text = profile!.occupation ?? "";
               dobController.text = profile!.dob ?? "";
+              panController.text = profile!.panCard ;
               uniqueId.text = profile!.uniqueId ;
               selectedGender = profile!.gender;
+
+              print("datatat:${  panController.text = profile!.panCard }");
             }
 
             return _buildForm(isEditable: state.isEditable, profile: profile);
@@ -288,6 +294,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
         const SizedBox(height: 15),
         _label("Occupation"),
         _textField(controller: occupation, hint: "Enter Occupation", enabled: isEditable),
+        const SizedBox(height: 15),
+        _label("Pan Number"),
+        _textField(controller: panController, hint: "Enter PanNumber", enabled: isEditable),
         const SizedBox(height: 15),
         _label("Referral ID"),
         _textField(controller: uniqueId, hint: "", enabled: false),
