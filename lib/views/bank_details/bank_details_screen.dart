@@ -100,7 +100,7 @@ class _BankScreenState extends State<BankScreen> {
                                 ],
                               ),
                               const SizedBox(height: 10),
-                              _buildField("Bank Name", bank.bankName),
+                              _buildField("Bank Name", bank.bankName.toString()),
                               _buildField("Branch", bank.branchName ?? "-"),
                               _buildField("Account Number", bank.accountNumber),
                               _buildField("IFSC Code", bank.ifscCode),

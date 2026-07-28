@@ -1,4 +1,5 @@
 import 'package:bloc/bloc.dart';
+import 'package:dio/dio.dart';
 import 'package:executive/bloc/profile_bloc/profile_event.dart';
 import 'package:executive/bloc/profile_bloc/profile_state.dart';
 import '../../repository/profile_repo/profile_repository.dart';
@@ -45,6 +46,8 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
     }
   }
 
+
+
   /// ================= UPDATE PROFILE =================
   Future<void> _updateProfile(
       UpdateProfileEvent event,
@@ -73,8 +76,34 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
         isEditable: false,
         message: response.message,
       ));
-    } catch (e) {
+    } catch (e, stack) {
+      // --- BEGIN detailed error logging ---
       print("🔴 BLoC: Update error - $e");
+      print("🔴 Stack trace: $stack");
+
+      // If Dio is used
+      if (e is DioException) {
+        final response = e.response;
+        if (response != null) {
+          print("🔴 Status code: ${response.statusCode}");
+          print("🔴 Response data: ${response.data}");
+          // Try to extract a user-friendly message
+          String? errorMessage;
+          if (response.data is Map) {
+            errorMessage = response.data['message'] ?? response.data['error'] ?? response.data['detail'];
+          } else if (response.data is String) {
+            errorMessage = response.data;
+          }
+          if (errorMessage != null) {
+            print("🔴 Server error message: $errorMessage");
+          }
+        } else {
+          print("🔴 No response received (network/timeout)");
+        }
+      }
+
+
+      // Fallback
       emit(ProfileError(e.toString()));
     }
   }
